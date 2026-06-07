@@ -1,0 +1,15 @@
+{{ define "main" }}
+  <section class="post-list">
+    <h2 class="section-title">目录</h2>
+    <ol>
+      {{ range first 20 (where .Site.RegularPages "Section" "posts") }}
+        <li>
+          <a class="post-link" href="{{ .Permalink }}">{{ .Title }}</a>
+          <span class="post-date">{{ .Date.Format "2006 年 1 月 2 日" }}</span>
+        </li>
+      {{ else }}
+        <li class="empty">还没有文章。</li>
+      {{ end }}
+    </ol>
+  </section>
+{{ end }}

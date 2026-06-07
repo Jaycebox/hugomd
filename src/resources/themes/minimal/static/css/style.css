@@ -1,0 +1,71 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #888;
+  --accent: #2a6df4;
+  --border: #eaeaea;
+  --code-bg: #f6f8fa;
+  --max-w: 760px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  line-height: 1.7;
+  font-size: 16px;
+}
+
+.container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+
+.site-header {
+  border-bottom: 1px solid var(--border);
+  padding: 18px 0;
+}
+.site-header .container {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  max-width: 960px;
+}
+.site-title { font-size: 20px; font-weight: 600; color: var(--fg); text-decoration: none; }
+.site-nav a { color: var(--muted); text-decoration: none; margin-left: 18px; font-size: 14px; }
+.site-nav a:hover { color: var(--accent); }
+
+main.container { padding-top: 40px; padding-bottom: 80px; }
+
+.post-list ul { list-style: none; padding: 0; }
+.post-list li { padding: 12px 0; border-bottom: 1px dashed var(--border); display: flex; justify-content: space-between; gap: 16px; }
+.post-list .empty { color: var(--muted); border: none; }
+.post-link { color: var(--fg); text-decoration: none; font-size: 17px; }
+.post-link:hover { color: var(--accent); }
+.post-date { color: var(--muted); font-size: 13px; }
+
+.post-header { margin-bottom: 24px; }
+.post-title { font-size: 30px; margin: 0 0 8px; line-height: 1.3; }
+
+.post-content h1, .post-content h2, .post-content h3, .post-content h4 { margin-top: 1.6em; line-height: 1.3; }
+.post-content h1 { font-size: 26px; } .post-content h2 { font-size: 22px; } .post-content h3 { font-size: 18px; }
+.post-content p { margin: 1em 0; }
+.post-content a { color: var(--accent); text-decoration: none; border-bottom: 1px solid transparent; }
+.post-content a:hover { border-bottom-color: var(--accent); }
+.post-content blockquote { border-left: 3px solid var(--accent); margin: 1.2em 0; padding: 4px 16px; color: #555; background: #f9faff; }
+.post-content code { background: var(--code-bg); padding: 2px 6px; border-radius: 4px; font-size: 0.92em; font-family: "JetBrains Mono", Consolas, Menlo, monospace; }
+.post-content pre { background: var(--code-bg); padding: 14px 16px; border-radius: 6px; overflow-x: auto; line-height: 1.55; }
+.post-content pre code { background: transparent; padding: 0; }
+.post-content table { border-collapse: collapse; margin: 1em 0; }
+.post-content th, .post-content td { border: 1px solid var(--border); padding: 6px 12px; }
+.post-content img { max-width: 100%; height: auto; border-radius: 4px; }
+.post-content ul, .post-content ol { padding-left: 1.5em; }
+
+.site-footer { border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; padding: 24px 0; text-align: center; }
+
+/* 代码高亮 chroma 极简调色 */
+.chroma { background: var(--code-bg); }
+.chroma .k { color: #d73a49; } .chroma .kn { color: #d73a49; }
+.chroma .s { color: #032f62; } .chroma .s1, .chroma .s2 { color: #032f62; }
+.chroma .nb { color: #005cc5; } .chroma .nc { color: #6f42c1; font-weight: 600; }
+.chroma .c, .chroma .c1, .chroma .cm { color: #6a737d; font-style: italic; }
+.chroma .n { color: #24292e; } .chroma .nf { color: #6f42c1; }
+.chroma .mi, .chroma .mf, .chroma .mh { color: #005cc5; }
+.chroma .linenos { color: #b3b3b3; user-select: none; padding-right: 12px; }

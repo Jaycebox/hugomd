@@ -1,0 +1,23 @@
+node_modules/
+dist/
+out/
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.local
+
+# monaco vendor (~30MB，安装时自动生成)
+src/renderer/vendor/
+
+# electron-builder 产物
+release/
+
+# 用户工作区（如果用户误把工作区放到项目目录内）
+.workspaces/
+workspace/
+
+# hugo 构建产物（如果在项目内运行了 hugo）
+public/
+resources/_gen/
+.hugo_build.lock

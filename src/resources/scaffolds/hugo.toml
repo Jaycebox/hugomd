@@ -1,0 +1,42 @@
+baseURL = "http://localhost/"
+title = "${SITE_NAME}"
+theme = "${THEME}"
+
+defaultContentLanguage = "zh-cn"
+defaultContentLanguageInSubdir = false
+
+[frontmatter]
+date = ["date", "publishDate", "lastmod"]
+lastmod = ["lastmod", ":fileModTime"]
+
+[markup]
+  [markup.highlight]
+    noClasses = false
+    codeFences = true
+    guessSyntax = true
+    lineNos = true
+    lineNumbersInTable = true
+    tabWidth = 2
+
+[languages]
+  [languages.zh-cn]
+    languageName = "Chinese"
+    weight = 1
+    title = "${SITE_NAME}"
+
+[menu]
+  [[languages.zh-cn.menu.main]]
+    identifier = "home"
+    name = "Home"
+    url = "/"
+    weight = 1
+  [[languages.zh-cn.menu.main]]
+    identifier = "posts"
+    name = "Posts"
+    url = "/posts/"
+    weight = 2
+  [[languages.zh-cn.menu.main]]
+    identifier = "about"
+    name = "About"
+    url = "/about/"
+    weight = 3

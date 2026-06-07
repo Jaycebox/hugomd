@@ -1,0 +1,10 @@
+name = "minimal"
+license = "MIT"
+description = "hhAPP 内置主题 - 极简白底"
+homepage = ""
+tags = ["minimal", "blog"]
+features = ["responsive"]
+min_version = "0.120.0"
+
+[author]
+  name = "hhAPP"

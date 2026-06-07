@@ -1,0 +1,9 @@
+<header class="paper-header">
+  <h1 class="site-title"><a href="{{ .Site.BaseURL }}">{{ .Site.Title }}</a></h1>
+  <p class="site-subtitle">一份用 hhAPP 写下来的笔记 / 博客</p>
+  <nav class="site-nav">
+    {{ range .Site.Menus.main }}
+      <a href="{{ .URL | relURL }}">· {{ .Name }} ·</a>
+    {{ end }}
+  </nav>
+</header>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; img-src 'self' data: http://127.0.0.1:*; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-eval'; frame-src http://127.0.0.1:*; connect-src 'self' http://127.0.0.1:*; worker-src 'self' blob:;" />
+  <title>hhAPP</title>
+  <link rel="stylesheet" href="styles/main.css" />
+  <link rel="stylesheet" href="styles/editor.css" />
+  <link rel="stylesheet" href="styles/sidebar.css" />
+  <link rel="stylesheet" href="styles/preview.css" />
+  <link rel="stylesheet" href="styles/dialogs.css" />
+</head>
+<body>
+  <div id="app" class="app">
+    <!-- 标题栏 -->
+    <header class="titlebar">
+      <div class="titlebar-left">
+        <span class="app-logo">📝</span>
+        <span class="app-name">hhAPP</span>
+        <span class="workspace-name" id="workspace-name">未打开工作区</span>
+      </div>
+      <div class="titlebar-center">
+        <span class="server-status" id="server-status">
+          <span class="dot"></span>
+          <span class="text">hugo 未运行</span>
+        </span>
+      </div>
+      <div class="titlebar-right">
+        <button class="btn btn-ghost" id="btn-new-workspace" title="新建工作区 (Ctrl+Shift+N)">＋ 工作区</button>
+        <button class="btn btn-ghost" id="btn-open-workspace" title="打开已有工作区 (Ctrl+Shift+O)">📂 打开</button>
+        <button class="btn btn-ghost" id="btn-settings" title="设置 (Ctrl+,)">⚙ 设置</button>
+        <button class="btn btn-primary" id="btn-toggle-preview" title="切换预览 (Ctrl+P)">👀 预览</button>
+      </div>
+    </header>
+
+    <!-- 主体三栏 -->
+    <main class="main">
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <h3>笔记</h3>
+          <button class="btn-icon" id="btn-new-post" title="新建笔记 (Ctrl+N)">＋</button>
+        </div>
+        <ul class="file-list" id="file-list">
+          <li class="empty">还没有笔记</li>
+        </ul>
+        <div class="sidebar-footer">
+          <button class="btn-link" id="btn-reveal-workspace" title="在文件管理器中打开">↗ 打开工作区目录</button>
+        </div>
+      </aside>
+
+      <section class="editor-pane" id="editor-pane">
+        <div class="editor-empty" id="editor-empty">
+          <div class="empty-content">
+            <h2>👋 欢迎使用 hhAPP</h2>
+            <p>一个基于 Electron + Hugo 的极简笔记/博客 App。</p>
+            <p>开始之前：</p>
+            <ol>
+              <li>点右上角 <b>＋ 工作区</b> 创建一个新工作区</li>
+              <li>App 会自动在后台启动 <code>hugo server</code></li>
+              <li>在左侧新建笔记，右侧实时预览</li>
+            </ol>
+            <button class="btn btn-primary" id="btn-empty-new">＋ 新建第一个工作区</button>
+          </div>
+        </div>
+        <div class="editor-container" id="editor-container" style="display:none"></div>
+        <div class="editor-status" id="editor-status" style="display:none">
+          <span id="doc-path"></span>
+          <span class="sep">·</span>
+          <span id="save-state">已保存</span>
+          <span class="sep">·</span>
+          <span id="cursor-pos">Ln 1, Col 1</span>
+        </div>
+      </section>
+
+      <section class="preview-pane" id="preview-pane">
+        <div class="preview-placeholder" id="preview-placeholder">
+          <p>打开工作区后，预览窗口会出现在这里。</p>
+        </div>
+        <iframe class="preview-frame" id="preview-frame" style="display:none"
+                sandbox="allow-same-origin allow-scripts allow-forms allow-popups"></iframe>
+      </section>
+    </main>
+
+    <!-- 状态栏 -->
+    <footer class="statusbar">
+      <span id="status-left">就绪</span>
+      <span id="status-right"></span>
+    </footer>
+  </div>
+
+  <!-- Monaco AMD loader -->
+  <script src="vendor/monaco/vs/loader.js"></script>
+  <script src="scripts/editor.js"></script>
+  <script src="scripts/sidebar.js"></script>
+  <script src="scripts/preview.js"></script>
+  <script src="scripts/dialogs.js"></script>
+  <script src="scripts/main.js"></script>
+</body>
+</html>
