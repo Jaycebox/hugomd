@@ -78,7 +78,7 @@
 
     async _handleDelete(f) {
       if (!this._onDelete) return;
-      const ok = window.HHDialogs.confirm({
+      const ok = await window.HHDialogs.confirm({
         title: '删除笔记',
         message: `确定删除 "${stripMdExt(f.name)}"？此操作不可撤销。`,
         okText: '删除',
@@ -90,7 +90,7 @@
 
     async _handleRename(f) {
       if (!this._onRename) return;
-      const newName = window.HHDialogs.prompt({
+      const newName = await window.HHDialogs.prompt({
         title: '重命名笔记',
         message: '输入新文件名（不含 .md）',
         defaultValue: stripMdExt(f.name),

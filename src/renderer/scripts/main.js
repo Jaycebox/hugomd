@@ -10,6 +10,17 @@
 
 (function () {
   const $ = (id) => document.getElementById(id);
+
+  // 统一错误信息提取：兼容 Error 对象和 IPC 返回的 { error: string }
+  function errMsg(e) {
+    if (!e) return '未知错误';
+    if (typeof e === 'string') return e;
+    if (typeof e === 'object' && typeof e.error === 'string') return e.error;
+    if (typeof e === 'object' && e.message) return e.message;
+    return String(e);
+  }
+  window.HHerrMsg = errMsg;
+
   const Store = {
     state: {
       workspaceDir: null,
@@ -37,7 +48,7 @@
       await window.HHEditor.init();
     } catch (e) {
       console.error('Monaco init failed:', e);
-      window.HHDialogs.toast({ message: '编辑器初始化失败: ' + e.message, type: 'error', duration: 5000 });
+      window.HHDialogs.toast({ message: '编辑器初始化失败: ' + window.HHerrMsg(e), type: 'error', duration: 5000 });
       return;
     }
     window.HHEditor.mount($('editor-container'), '');
@@ -57,6 +68,7 @@
     $('btn-new-post').addEventListener('click', () => createNewPost());
     $('btn-reveal-workspace').addEventListener('click', () => revealWorkspace());
     $('btn-empty-new').addEventListener('click', () => flowNewWorkspace());
+    $('btn-image').addEventListener('click', () => manageCurrentImages());
 
     window.HHSidebar.init({
       listEl: $('file-list'),
@@ -98,6 +110,7 @@
         setStatus('Hugo 下载完成');
       }
     });
+    let _crashToastTimer = null;
     window.hh.server.onEvent((ev) => {
       if (ev.type === 'state') {
         Store.state.server = { state: ev.state, baseURL: ev.baseURL, port: ev.port };
@@ -106,6 +119,19 @@
           window.HHPreview.setBaseURL(ev.baseURL, Store.state.currentFile && Store.state.currentFile.path);
         } else if (ev.state === 'stopped' || ev.state === 'crashed' || ev.state === 'error') {
           window.HHPreview.setBaseURL(null);
+        }
+        // 意外崩溃：若 2s 内没有新的 starting（自动重试），说明已耗尽，给出明确提示
+        if (ev.state === 'crashed') {
+          if (_crashToastTimer) clearTimeout(_crashToastTimer);
+          _crashToastTimer = setTimeout(() => {
+            window.HHDialogs.toast({
+              message: 'hugo 预览服务已停止，请检查工作区内容（front matter / markdown）',
+              type: 'error',
+              duration: 6000,
+            });
+          }, 2000);
+        } else if (ev.state === 'starting' || ev.state === 'running') {
+          if (_crashToastTimer) { clearTimeout(_crashToastTimer); _crashToastTimer = null; }
         }
       } else if (ev.type === 'log') {
         // reserved
@@ -124,7 +150,8 @@
     let text = 'hugo 未运行';
     if (s === 'starting') { text = 'hugo 启动中'; el.classList.add('starting'); }
     else if (s === 'running') { text = 'hugo: ' + Store.state.server.baseURL; el.classList.add('running'); }
-    else if (s === 'error' || s === 'crashed') { text = 'hugo 出错'; el.classList.add('error'); }
+    else if (s === 'error') { text = 'hugo 启动失败'; el.classList.add('error'); }
+    else if (s === 'crashed') { text = 'hugo 已停止'; el.classList.add('error'); }
     el.querySelector('.text').textContent = text;
   }
 
@@ -165,15 +192,19 @@
       existingNames: (await window.hh.workspace.list()).map(w => w.name),
     });
     if (!result) return;
+    console.warn('[hhAPP-flow] new-workspace result:', result);
     try {
       const ws = await window.hh.hugo.ensure();
+      console.warn('[hhAPP-flow] hugo ensure OK:', ws.path);
       Store.state.hugo = { source: ws.path, version: ws.version };
       const created = await window.hh.workspace.create(result);
+      console.warn('[hhAPP-flow] workspace create OK:', created.path);
       await window.hh.settings.setMany({ lastWorkspace: created.path, lastTheme: result.theme });
       await openWorkspace(created.path, { silent: true });
       window.HHDialogs.toast({ message: '已创建工作区: ' + created.name, type: 'success' });
     } catch (e) {
-      window.HHDialogs.toast({ message: '创建失败: ' + e.message, type: 'error', duration: 5000 });
+      console.warn('[hhAPP-flow] CREATE FAILED:', e.stack || window.HHerrMsg(e));
+      window.HHDialogs.toast({ message: '创建失败: ' + window.HHerrMsg(e), type: 'error', duration: 5000 });
     }
   }
 
@@ -197,6 +228,7 @@
       $('editor-empty').style.display = 'none';
       $('editor-container').style.display = '';
       $('editor-status').style.display = '';
+      $('editor-toolbar').style.display = '';
       if (files.length > 0) {
         await openFile(files[0]);
       } else {
@@ -210,12 +242,12 @@
         await window.hh.server.start(dir, { draft: true });
         setStatus('hugo server 已在 ' + ws.path + ' 启动');
       } catch (e) {
-        window.HHDialogs.toast({ message: 'hugo server 启动失败: ' + e.message, type: 'error', duration: 5000 });
+        window.HHDialogs.toast({ message: 'hugo server 启动失败: ' + window.HHerrMsg(e), type: 'error', duration: 5000 });
         setStatus('hugo 启动失败');
       }
       if (!silent) window.HHDialogs.toast({ message: '已打开: ' + Store.state.workspaceName, type: 'success' });
     } catch (e) {
-      window.HHDialogs.toast({ message: '打开失败: ' + e.message, type: 'error', duration: 5000 });
+      window.HHDialogs.toast({ message: '打开失败: ' + window.HHerrMsg(e), type: 'error', duration: 5000 });
     }
   }
 
@@ -231,6 +263,7 @@
     $('editor-empty').style.display = '';
     $('editor-container').style.display = 'none';
     $('editor-status').style.display = 'none';
+    $('editor-toolbar').style.display = 'none';
     renderWorkspaceName();
   }
 
@@ -272,7 +305,7 @@
       }
       setStatus('已打开 ' + file.name);
     } catch (e) {
-      window.HHDialogs.toast({ message: '读取失败: ' + e.message, type: 'error' });
+      window.HHDialogs.toast({ message: '读取失败: ' + window.HHerrMsg(e), type: 'error' });
     }
   }
 
@@ -296,7 +329,7 @@
       const newFile = files.find(f => f.path === created.path);
       if (newFile) await openFile(newFile);
     } catch (e) {
-      window.HHDialogs.toast({ message: '创建失败: ' + e.message, type: 'error' });
+      window.HHDialogs.toast({ message: '创建失败: ' + window.HHerrMsg(e), type: 'error' });
     }
   }
 
@@ -318,7 +351,7 @@
       }
       window.HHDialogs.toast({ message: '已删除', type: 'success' });
     } catch (e) {
-      window.HHDialogs.toast({ message: '删除失败: ' + e.message, type: 'error' });
+      window.HHDialogs.toast({ message: '删除失败: ' + window.HHerrMsg(e), type: 'error' });
     }
   }
 
@@ -339,7 +372,33 @@
       }
       window.HHDialogs.toast({ message: '已重命名', type: 'success' });
     } catch (e) {
-      window.HHDialogs.toast({ message: '重命名失败: ' + e.message, type: 'error' });
+      window.HHDialogs.toast({ message: '重命名失败: ' + window.HHerrMsg(e), type: 'error' });
+    }
+  }
+
+  async function manageImages(file) {
+    if (!Store.state.workspaceDir) return;
+    await window.HHDialogs.images({
+      workspaceDir: Store.state.workspaceDir,
+      postPath: file.path,
+      onInsert: (ref) => insertImageRef(ref),
+    });
+  }
+
+  // 工具栏"图片"按钮：管理当前打开帖子的图片
+  async function manageCurrentImages() {
+    if (!Store.state.workspaceDir || !Store.state.currentFile) {
+      window.HHDialogs.toast({ message: '请先打开一个帖子', type: 'info' });
+      return;
+    }
+    await manageImages(Store.state.currentFile);
+  }
+
+  // 在编辑器光标处插入图片引用 ![](ref)
+  function insertImageRef(ref) {
+    const snippet = '\n\n![](' + ref + ')\n\n';
+    if (window.HHEditor && window.HHEditor.insertText) {
+      window.HHEditor.insertText(snippet);
     }
   }
 
@@ -374,7 +433,7 @@
     } catch (e) {
       $('save-state').textContent = '保存失败';
       $('save-state').className = 'dirty';
-      window.HHDialogs.toast({ message: '保存失败: ' + e.message, type: 'error' });
+      window.HHDialogs.toast({ message: '保存失败: ' + window.HHerrMsg(e), type: 'error' });
     } finally {
       Store.state.saving = false;
     }
@@ -396,5 +455,33 @@
     document.addEventListener('DOMContentLoaded', bootstrap);
   } else {
     bootstrap();
+  }
+
+  // ============= smoke 钩子（仅 smoke 模式下启用） =============
+  if (window.location && window.location.search && window.location.search.includes('smoke=1')) {
+    window.__hhapp_smoke = {
+      runNewWorkspace: () => flowNewWorkspace(),
+      runOpenWorkspace: () => flowOpenWorkspace(),
+      getState: () => JSON.parse(JSON.stringify(Store.state)),
+      async autoCreate(name) {
+        const displayName = name || ('smoke-' + Date.now());
+        try {
+          const defaultRoot = await window.hh.workspace.defaultRoot();
+          const fullDir = defaultRoot.replace(/[\\/]+$/, '') + '/' + displayName;
+          const ws = await window.hh.hugo.ensure();
+          const created = await window.hh.workspace.create({ dir: fullDir, name: displayName, theme: 'minimal' });
+          await window.hh.settings.setMany({ lastWorkspace: created.path, lastTheme: 'minimal' });
+          await openWorkspace(created.path, { silent: true });
+          return {
+            ok: true,
+            path: created.path,
+            state: window.__hhapp_smoke.getState(),
+          };
+        } catch (e) {
+          return { ok: false, error: window.HHerrMsg(e), stack: (e.stack || '').split('\n')[0] };
+        }
+      },
+    };
+    console.warn('[hhAPP-smoke] hooks installed:', Object.keys(window.__hhapp_smoke).join(', '));
   }
 })();

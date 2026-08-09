@@ -47,10 +47,15 @@
     _targetURL(docPath) {
       if (!this._currentBaseURL) return null;
       if (docPath) {
-        // 渲染当前文档：content/posts/foo.md -> /posts/foo/
-        const cleaned = String(docPath)
-          .replace(/^content\//, '')
-          .replace(/\.md$/, '/');
+        // 渲染当前文档：
+        //   裸帖  posts/foo.md       -> /posts/foo/
+        //   bundle posts/xxx/index.md -> /posts/xxx/
+        let cleaned = String(docPath).replace(/^content\//, '');
+        if (cleaned.endsWith('index.md')) {
+          cleaned = cleaned.replace(/index\.md$/, '');
+        } else {
+          cleaned = cleaned.replace(/\.md$/, '/');
+        }
         return `${this._currentBaseURL}/${cleaned}`;
       }
       return `${this._currentBaseURL}/`;

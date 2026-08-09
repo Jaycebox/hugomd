@@ -107,6 +107,13 @@
       if (this._editor) this._editor.focus();
     },
 
+    insertText(text) {
+      if (!this._editor) return;
+      const selection = this._editor.getSelection();
+      this._editor.executeEdits('hhapp', [{ range: selection, text: text, forceMoveMarkers: true }]);
+      this._editor.focus();
+    },
+
     onChange(cb) { this._onChangeCallback = cb; },
     onCursor(cb) { this._onCursorCallback = cb; },
 

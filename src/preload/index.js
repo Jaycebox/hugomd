@@ -55,6 +55,11 @@ const api = {
     create: (workspaceDir, baseName) => ipcRenderer.invoke('files:create', workspaceDir, baseName),
     delete: (workspaceDir, relPath) => ipcRenderer.invoke('files:delete', workspaceDir, relPath),
     rename: (workspaceDir, relPath, newName) => ipcRenderer.invoke('files:rename', workspaceDir, relPath, newName),
+    listImages: (workspaceDir, postPath) => ipcRenderer.invoke('files:listImages', workspaceDir, postPath),
+    readImage: (workspaceDir, imagePath) => ipcRenderer.invoke('files:readImage', workspaceDir, imagePath),
+    saveImage: (workspaceDir, payload) => ipcRenderer.invoke('files:saveImage', workspaceDir, payload),
+    deleteImage: (workspaceDir, imagePath) => ipcRenderer.invoke('files:deleteImage', workspaceDir, imagePath),
+    renameImage: (workspaceDir, imagePath, newName) => ipcRenderer.invoke('files:renameImage', workspaceDir, imagePath, newName),
   },
   menu: {
     on: (cb) => {
@@ -73,6 +78,9 @@ const api = {
       });
       return () => offs.forEach((f) => f());
     },
+  },
+  smoke: {
+    runRendererCreate: () => ipcRenderer.invoke('smoke:runRendererCreate'),
   },
 };
 

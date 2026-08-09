@@ -25,6 +25,21 @@
 .editor-empty code { background: var(--bg-3); padding: 2px 6px; border-radius: 3px; color: var(--accent); }
 .editor-empty .btn-primary { margin-top: 24px; }
 
+.editor-toolbar {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.editor-toolbar .btn {
+  padding: 3px 10px;
+  font-size: 12px;
+}
+
 .editor-container {
   flex: 1;
   position: relative;

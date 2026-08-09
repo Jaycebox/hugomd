@@ -115,6 +115,62 @@
 .workspace-list .ws-path { font-size: 11px; color: var(--fg-muted); font-family: monospace; }
 .workspace-list .ws-actions { display: flex; gap: 4px; }
 
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 8px;
+}
+.image-card {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg);
+}
+.image-card .img-thumb {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  background: #111;
+  display: block;
+}
+.image-card .img-meta {
+  padding: 6px 8px;
+  font-size: 11px;
+  color: var(--fg-muted);
+  word-break: break-all;
+}
+.image-card .img-actions {
+  display: flex;
+  gap: 4px;
+  padding: 4px 8px 8px;
+}
+.image-card .img-actions button {
+  flex: 1;
+  font-size: 11px;
+  padding: 4px 0;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.image-card .img-actions button:hover { background: #3a3a3d; }
+.upload-zone {
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.upload-zone:hover { border-color: var(--accent-2); color: var(--fg); }
+.upload-zone input[type="file"] { display: none; }
+
 .toast {
   position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%);
   background: var(--bg-3); color: var(--fg);
