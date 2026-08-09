@@ -9,6 +9,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 const api = {
   app: {
     info: () => ipcRenderer.invoke('app:info'),
+    openExternal: (url) => ipcRenderer.invoke('app:openExternal', url),
   },
   settings: {
     getAll: () => ipcRenderer.invoke('settings:getAll'),
@@ -22,6 +23,7 @@ const api = {
     setPath: (p) => ipcRenderer.invoke('hugo:setPath', p),
     clearPath: () => ipcRenderer.invoke('hugo:clearPath'),
     pickPath: () => ipcRenderer.invoke('hugo:pickPath'),
+    build: (payload) => ipcRenderer.invoke('hugo:build', payload),
     onDownloadProgress: (cb) => {
       const fn = (_e, p) => cb(p);
       ipcRenderer.on('hugo:download-progress', fn);

@@ -21,7 +21,7 @@
         <span class="workspace-name" id="workspace-name">未打开工作区</span>
       </div>
       <div class="titlebar-center">
-        <span class="server-status" id="server-status">
+        <span class="server-status" id="server-status" title="点击打开 Hugo 面板">
           <span class="dot"></span>
           <span class="text">hugo 未运行</span>
         </span>
@@ -33,6 +33,28 @@
         <button class="btn btn-primary" id="btn-toggle-preview" title="切换预览 (Ctrl+P)">👀 预览</button>
       </div>
     </header>
+
+    <!-- Hugo 信息面板（点击标题栏状态展开，非弹窗） -->
+    <div class="hugo-panel" id="hugo-panel" style="display:none">
+      <div class="hp-header">
+        <span class="hp-title">⚙ Hugo</span>
+        <span class="hp-state" id="hp-state">未运行</span>
+        <button class="hp-close" id="hp-close" title="关闭">✕</button>
+      </div>
+      <div class="hp-body">
+        <div class="hp-info" id="hp-info"></div>
+        <div class="hp-actions">
+          <button class="btn btn-ghost hp-btn" id="hp-open-web" title="在系统浏览器打开预览页面">🌐 打开网页版</button>
+          <button class="btn btn-ghost hp-btn" id="hp-build" title="生成静态网站到工作区 public/ 目录">⚙️ 生成静态网站</button>
+          <button class="btn btn-ghost hp-btn" id="hp-restart" title="重启预览服务器">🔄 重启预览</button>
+        </div>
+        <div class="hp-build-result" id="hp-build-result" style="display:none">
+          <div class="hp-br-head" id="hp-br-head"></div>
+          <pre class="hp-br-log" id="hp-br-log"></pre>
+          <div class="hp-br-actions" id="hp-br-actions"></div>
+        </div>
+      </div>
+    </div>
 
     <!-- 主体三栏 -->
     <main class="main">

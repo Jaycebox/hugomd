@@ -2,6 +2,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const { spawn } = require('child_process');
 const { ipcMain, dialog, shell, app } = require('electron');
 
 /**
@@ -34,6 +35,13 @@ function registerIpc(ctx) {
     userData: app.getPath('userData'),
     platform: process.platform,
   }));
+  handle('app:openExternal', (_e, url) => {
+    if (typeof url === 'string' && /^https?:\/\//.test(url)) {
+      shell.openExternal(url);
+      return true;
+    }
+    return false;
+  });
 
   handle('settings:getAll', () => settings.all());
   handle('settings:set', (_e, key, value) => { settings.set(key, value); return true; });
@@ -69,6 +77,65 @@ function registerIpc(ctx) {
     if (res.canceled || !res.filePaths[0]) return null;
     return res.filePaths[0];
   });
+  // 生成静态网站：hugo build，输出到 <workspace>/public（可部署到 GitHub Pages 等）
+  handle('hugo:build', async (_e, payload) => {
+    const workspaceDir = payload && payload.workspaceDir;
+    if (!workspaceDir || !fs.existsSync(workspaceDir)) throw new Error('工作区不存在');
+    const outputDir = (payload && payload.outputDir) || path.join(workspaceDir, 'public');
+
+    // 从工作区元数据读主题（兼容旧 .hhapp.json），解析站点模板
+    const metaFile = fs.existsSync(path.join(workspaceDir, '.hhapp.json'))
+      ? path.join(workspaceDir, '.hhapp.json')
+      : path.join(workspaceDir, '.hugomd.json');
+    let theme = 'minimal';
+    try { theme = (JSON.parse(fs.readFileSync(metaFile, 'utf8'))).theme || 'minimal'; } catch (_) { /* noop */ }
+    const siteTemplateDir = await workspace.ensureSiteTemplate(theme);
+    const bin = await hugo.resolve();
+
+    const started = Date.now();
+    const args = ['-s', siteTemplateDir, '-c', workspaceDir, '-d', outputDir, '--buildDrafts', '--gc'];
+    process.stderr.write(`[hugomd] hugo build: ${bin} ${args.join(' ')}\n`);
+    const result = await new Promise((resolve) => {
+      const proc = spawn(bin, args, {
+        cwd: siteTemplateDir,
+        env: { ...process.env, HUGO_ENV: 'production' },
+        stdio: ['ignore', 'pipe', 'pipe'],
+      });
+      let out = '';
+      let err = '';
+      proc.stdout.on('data', (d) => { out += d.toString(); });
+      proc.stderr.on('data', (d) => { err += d.toString(); });
+      const timer = setTimeout(() => { proc.kill(); }, 120000); // 120s 超时保护
+      proc.on('close', (code) => {
+        clearTimeout(timer);
+        resolve({ code, out, err });
+      });
+      proc.on('error', (e) => {
+        clearTimeout(timer);
+        resolve({ code: -1, out, err: String((e && e.message) || e) });
+      });
+    });
+    const durationMs = Date.now() - started;
+    const ok = result.code === 0;
+    const logTail = (ok ? result.out : (result.err || result.out)).split('\n').filter(Boolean).slice(-8).join('\n');
+    let fileCount = 0;
+    if (ok && fs.existsSync(outputDir)) {
+      const walk = (dir) => {
+        for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+          const full = path.join(dir, e.name);
+          if (e.isDirectory()) walk(full);
+          else fileCount++;
+        }
+      };
+      walk(outputDir);
+    }
+    if (ok) {
+      process.stderr.write(`[hugomd] hugo build OK: ${fileCount} files -> ${outputDir} (${durationMs}ms)\n`);
+    } else {
+      process.stderr.write(`[hugomd] hugo build FAILED (code=${result.code}): ${logTail}\n`);
+    }
+    return { ok, outputDir, fileCount, durationMs, logTail };
+  });
 
   // ---- 工作区 ----
   handle('workspace:list', () => workspace.list());
@@ -81,8 +148,8 @@ function registerIpc(ctx) {
   });
   handle('workspace:pickDir', async () => {
     // 测试模式：从环境变量注入模拟的所选路径（跳过原生对话框）
-    if (process.env.HHAPP_MOCK_PICK_DIR) {
-      return process.env.HHAPP_MOCK_PICK_DIR;
+    if (process.env.HUGOMD_MOCK_PICK_DIR) {
+      return process.env.HUGOMD_MOCK_PICK_DIR;
     }
     const res = await dialog.showOpenDialog(window.win, {
       title: '选择工作区根目录',
@@ -152,7 +219,7 @@ function registerIpc(ctx) {
   });
 
   // ---- smoke 测试：触发渲染层 flowNewWorkspace ----
-  if (process.env.HHAPP_SMOKE_RENDERER === '1') {
+  if (process.env.HUGOMD_SMOKE_RENDERER === '1') {
     handle('smoke:runRendererCreate', async () => {
       window.send('smoke:runRendererCreate');
       return { triggered: true };

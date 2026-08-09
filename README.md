@@ -44,7 +44,7 @@ npm run test:e2e    # 只跑 hugo server --watch 实时重建
 - **createUnit**：`workspace.create` 11 项断言（含缺参数 / 非法主题 / 非空目录等错误分支）
 - **smoke**：启动真实 Electron，模拟用户点击"＋工作区"→ 填表单 → 点"创建" → 校验 hugo server 运行
 
-smoke 测试通过 `HHAPP_USER_DATA` 环境变量使用隔离的临时 userData，不会污染真实数据。
+smoke 测试通过 `HUGOMD_USER_DATA` 环境变量使用隔离的临时 userData，不会污染真实数据。
 
 
 ## 目录结构

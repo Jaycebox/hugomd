@@ -287,6 +287,21 @@ const TESTS = {
       return { pass, detail: 'paste -> saved to post dir + ![](ref) inserted' };
     },
   },
+  hugoBuild: {
+    desc: '真实 Electron：Hugo 面板静态网站生成（hugo:build）',
+    run() {
+      const r = spawnSync(process.execPath, [path.join(__dirname, 'test-hugo-build.js')], {
+        encoding: 'utf8',
+        timeout: 60000,
+      });
+      const combined = r.stdout + r.stderr;
+      const pass =
+        /"ok": true/.test(combined) &&
+        /fileCount": [1-9]/.test(combined) &&
+        /outputDir": ".*public/.test(combined);
+      return { pass, detail: 'hugo build -> public/ with files' };
+    },
+  },
   bundleE2E: {
     desc: 'Bundle 帖子 + 图片在 hugo server 完整渲染',
     run() {

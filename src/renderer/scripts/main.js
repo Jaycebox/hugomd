@@ -88,6 +88,26 @@
     // 粘贴截图：Win+Shift+S 截图后直接在编辑器 Ctrl+V，
     // 自动保存到当前帖子目录并插入 ![](ref)
     document.addEventListener('paste', handlePaste, true);
+
+    // Hugo 面板：点击标题栏状态展开（非弹窗）
+    const hp = $('hugo-panel');
+    $('server-status').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleHugoPanel();
+    });
+    $('hp-close').addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeHugoPanel();
+    });
+    document.addEventListener('click', (e) => {
+      if (hp.style.display !== 'none' && !hp.contains(e.target)) closeHugoPanel();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeHugoPanel();
+    });
+    $('hp-open-web').addEventListener('click', () => openHugoWeb());
+    $('hp-build').addEventListener('click', () => buildHugoStatic());
+    $('hp-restart').addEventListener('click', () => restartHugoServer());
   }
 
   function bindMenuEvents() {
@@ -157,6 +177,124 @@
     else if (s === 'error') { text = 'hugo 启动失败'; el.classList.add('error'); }
     else if (s === 'crashed') { text = 'hugo 已停止'; el.classList.add('error'); }
     el.querySelector('.text').textContent = text;
+    updateHugoPanelInfo();
+  }
+
+  // ============= Hugo 信息面板 =============
+
+  function toggleHugoPanel() {
+    const hp = $('hugo-panel');
+    if (hp.style.display === 'none') {
+      hp.style.display = 'block';
+      updateHugoPanelInfo();
+    } else {
+      closeHugoPanel();
+    }
+  }
+
+  function closeHugoPanel() {
+    $('hugo-panel').style.display = 'none';
+  }
+
+  // 面板开着时刷新信息（服务器状态/版本/端口/工作区）
+  async function updateHugoPanelInfo() {
+    const hp = $('hugo-panel');
+    if (!hp || hp.style.display === 'none') return;
+    const s = Store.state.server.state;
+    const stateEl = $('hp-state');
+    stateEl.textContent = s === 'running' ? '● 运行中' : (s === 'starting' ? '● 启动中' : '○ ' + (s === 'idle' ? '未运行' : '已停止'));
+    stateEl.className = 'hp-state ' + (s === 'running' ? 'on' : 'off');
+
+    const lines = [];
+    if (Store.state.hugo.version) lines.push('版本: ' + Store.state.hugo.version);
+    else if (Store.state.hugo.source) lines.push('版本: ' + Store.state.hugo.source);
+    if (Store.state.server.port) lines.push('端口: ' + Store.state.server.port);
+    if (Store.state.server.baseURL) lines.push('地址: ' + Store.state.server.baseURL);
+    if (Store.state.workspaceDir) lines.push('工作区: ' + Store.state.workspaceDir);
+    if (lines.length === 0) lines.push('尚未打开工作区');
+    $('hp-info').innerHTML = lines.map((l) => '<div>' + escapeHtml(l) + '</div>').join('');
+
+    // 网页版按钮：仅运行中可用
+    $('hp-open-web').disabled = s !== 'running';
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  // 🌐 打开网页版：系统浏览器打开预览地址
+  function openHugoWeb() {
+    const base = Store.state.server.baseURL;
+    if (!base) {
+      window.HHDialogs.toast({ message: 'hugo 未运行，无法打开网页版', type: 'info' });
+      return;
+    }
+    window.hugomd.app.openExternal(base);
+  }
+
+  // ⚙️ 生成静态网站：hugo build -> <workspace>/public
+  async function buildHugoStatic() {
+    const ws = Store.state.workspaceDir;
+    if (!ws) {
+      window.HHDialogs.toast({ message: '请先打开一个工作区', type: 'info' });
+      return;
+    }
+    const btn = $('hp-build');
+    const resultBox = $('hp-build-result');
+    const head = $('hp-br-head');
+    const logEl = $('hp-br-log');
+    const actionsEl = $('hp-br-actions');
+    btn.disabled = true;
+    btn.textContent = '⏳ 生成中...';
+    resultBox.style.display = 'none';
+    try {
+      const r = await window.hugomd.hugo.build({ workspaceDir: ws });
+      head.textContent = r.ok
+        ? '✅ 生成成功：' + r.fileCount + ' 个文件（' + (r.durationMs / 1000).toFixed(1) + 's）'
+        : '❌ 生成失败';
+      logEl.textContent = r.logTail || (r.ok ? '（无输出）' : '（无错误信息）');
+      actionsEl.innerHTML = '';
+      if (r.ok) {
+        const btnOpen = document.createElement('button');
+        btnOpen.className = 'btn btn-ghost hp-btn';
+        btnOpen.textContent = '📂 打开输出目录';
+        btnOpen.addEventListener('click', () => window.hugomd.workspace.reveal(r.outputDir));
+        const btnCopy = document.createElement('button');
+        btnCopy.className = 'btn btn-ghost hp-btn';
+        btnCopy.textContent = '📋 复制部署命令';
+        btnCopy.addEventListener('click', () => {
+          const cmd = 'cd "' + r.outputDir + '" && git init -b gh-pages && git add . && git commit -m "deploy hugomd site" && git remote add origin <你的仓库URL> && git push -f origin gh-pages';
+          navigator.clipboard.writeText(cmd).then(() => {
+            window.HHDialogs.toast({ message: '部署命令已复制（把 <你的仓库URL> 换成实际地址）', type: 'success' });
+          });
+        });
+        actionsEl.appendChild(btnOpen);
+        actionsEl.appendChild(btnCopy);
+      }
+      resultBox.style.display = 'block';
+    } catch (e) {
+      head.textContent = '❌ 生成失败';
+      logEl.textContent = window.HHerrMsg(e);
+      resultBox.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '⚙️ 生成静态网站';
+    }
+  }
+
+  // 🔄 重启预览服务器
+  async function restartHugoServer() {
+    const ws = Store.state.workspaceDir;
+    if (!ws) {
+      window.HHDialogs.toast({ message: '请先打开一个工作区', type: 'info' });
+      return;
+    }
+    try {
+      await window.hugomd.server.restart(ws);
+      window.HHDialogs.toast({ message: '已重启预览', type: 'success' });
+    } catch (e) {
+      window.HHDialogs.toast({ message: '重启失败: ' + window.HHerrMsg(e), type: 'error' });
+    }
   }
 
   function renderWorkspaceName() {

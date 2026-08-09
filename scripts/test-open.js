@@ -19,9 +19,9 @@ function run(userData) {
       cwd: path.join(__dirname, '..'),
       env: {
         ...process.env,
-        HHAPP_SMOKE_RENDERER: '1',
-        HHAPP_SMOKE: 'status-check',
-        HHAPP_USER_DATA: userData,
+        HUGOMD_SMOKE_RENDERER: '1',
+        HUGOMD_SMOKE: 'status-check',
+        HUGOMD_USER_DATA: userData,
       },
       stdio: ['ignore', 'pipe', 'pipe'],
     });

@@ -12,14 +12,14 @@ const electronPath = path.join(__dirname, '..', 'node_modules', 'electron', 'dis
 const userData = path.join(os.tmpdir(), 'hugomd-smoke-userdata');
 if (fs.existsSync(userData)) fs.rmSync(userData, { recursive: true, force: true });
 
-console.log('Spawning electron with HHAPP_SMOKE_RENDERER=1');
+console.log('Spawning electron with HUGOMD_SMOKE_RENDERER=1');
 const proc = spawn(electronPath, ['.', '--enable-logging'], {
   cwd: path.join(__dirname, '..'),
   env: {
     ...process.env,
-    HHAPP_SMOKE_RENDERER: '1',
-    HHAPP_SMOKE: 'create',
-    HHAPP_USER_DATA: userData,   // 覆盖 userData，避免污染真实 Roaming\hugomd
+    HUGOMD_SMOKE_RENDERER: '1',
+    HUGOMD_SMOKE: 'create',
+    HUGOMD_USER_DATA: userData,   // 覆盖 userData，避免污染真实 Roaming\hugomd
   },
   stdio: ['ignore', 'pipe', 'pipe'],
 });

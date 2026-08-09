@@ -1,7 +1,6 @@
 'use strict';
 
-// 真实 electron：模拟 Ctrl+V 粘贴截图 -> 自动保存 + 插入引用
-// 验证用户"截图后直接粘贴到文章"的核心工作流。
+// 真实 electron：Hugo 面板静态网站生成（hugo:build）端到端验证
 
 const { spawn } = require('child_process');
 const path = require('path');
@@ -9,7 +8,7 @@ const fs = require('fs');
 const os = require('os');
 
 const electronPath = path.join(__dirname, '..', 'node_modules', 'electron', 'dist', 'electron.exe');
-const userData = path.join(os.tmpdir(), 'hugomd-paste-test');
+const userData = path.join(os.tmpdir(), 'hugomd-hugo-build');
 if (fs.existsSync(userData)) fs.rmSync(userData, { recursive: true, force: true });
 
 const proc = spawn(electronPath, ['.', '--enable-logging'], {
@@ -17,7 +16,7 @@ const proc = spawn(electronPath, ['.', '--enable-logging'], {
   env: {
     ...process.env,
     HUGOMD_SMOKE_RENDERER: '1',
-    HUGOMD_SMOKE: 'paste-test',
+    HUGOMD_SMOKE: 'hugo-build',
     HUGOMD_USER_DATA: userData,
   },
   stdio: ['ignore', 'pipe', 'pipe'],
@@ -25,7 +24,7 @@ const proc = spawn(electronPath, ['.', '--enable-logging'], {
 proc.stderr.on('data', (d) => process.stderr.write('ERR: ' + d));
 
 (async () => {
-  await new Promise((r) => setTimeout(r, 20000));
+  await new Promise((r) => setTimeout(r, 25000));
   proc.kill();
   process.exit(0);
 })();

@@ -64,11 +64,71 @@ button { font-family: inherit; font-size: inherit; cursor: pointer; }
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 
-.server-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg-muted); }
+.server-status { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg-muted); cursor: pointer; user-select: none; padding: 3px 8px; border-radius: 4px; }
+.server-status:hover { background: var(--bg-3); }
 .server-status .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--fg-muted); transition: background 0.3s; }
 .server-status.running .dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
 .server-status.error .dot { background: var(--danger); }
 .server-status.starting .dot { background: var(--warn); animation: pulse 1s infinite; }
+
+/* ============== Hugo 信息面板（非弹窗） ============== */
+.hugo-panel {
+  position: absolute;
+  top: 38px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  max-width: calc(100vw - 24px);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  z-index: 100;
+  font-size: 12px;
+}
+.hp-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.hp-title { font-weight: 600; font-size: 13px; }
+.hp-state { font-size: 11px; padding: 1px 8px; border-radius: 10px; }
+.hp-state.on { background: rgba(46, 204, 113, 0.15); color: #2ecc71; }
+.hp-state.off { background: var(--bg-3); color: var(--fg-muted); }
+.hp-close {
+  margin-left: auto;
+  background: transparent;
+  border: none;
+  color: var(--fg-muted);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.hp-close:hover { background: var(--bg-3); color: var(--fg); }
+.hp-body { padding: 10px 12px 12px; }
+.hp-info { color: var(--fg-muted); line-height: 1.8; word-break: break-all; margin-bottom: 10px; }
+.hp-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.hp-btn { font-size: 12px; padding: 5px 10px; }
+.hp-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.hp-build-result { margin-top: 10px; border-top: 1px dashed var(--border); padding-top: 8px; }
+.hp-br-head { font-weight: 600; margin-bottom: 6px; }
+.hp-br-log {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 8px;
+  max-height: 140px;
+  overflow-y: auto;
+  font-size: 11px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+  margin: 0 0 8px;
+}
+.hp-br-actions { display: flex; gap: 6px; }
 @keyframes pulse { 50% { opacity: 0.4; } }
 
 /* ================== 按钮 ================== */

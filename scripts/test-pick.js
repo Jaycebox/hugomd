@@ -23,11 +23,11 @@ const proc = spawn(electronPath, ['.', '--enable-logging'], {
   cwd: path.join(__dirname, '..'),
   env: {
     ...process.env,
-    HHAPP_SMOKE_RENDERER: '1',
-    HHAPP_SMOKE: 'create-pick',
-    HHAPP_USER_DATA: userData,
-    HHAPP_CUSTOM_ROOT: customRoot,
-    HHAPP_MOCK_PICK_DIR: customRoot,
+    HUGOMD_SMOKE_RENDERER: '1',
+    HUGOMD_SMOKE: 'create-pick',
+    HUGOMD_USER_DATA: userData,
+    HUGOMD_CUSTOM_ROOT: customRoot,
+    HUGOMD_MOCK_PICK_DIR: customRoot,
   },
   stdio: ['ignore', 'pipe', 'pipe'],
 });

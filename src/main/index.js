@@ -60,62 +60,67 @@ class App {
 
     await this.window.create();
 
-    // 烟囱测试钩子：HHAPP_SMOKE=create 时自动跑一遍"新建工作区"流程。
+    // 烟囱测试钩子：HUGOMD_SMOKE=create 时自动跑一遍"新建工作区"流程。
     // 仅在 hugomd_SMOKE 环境变量存在时启用，用于回归测试。
-    if (process.env.HHAPP_SMOKE === 'create') {
+    if (process.env.HUGOMD_SMOKE === 'create') {
       setTimeout(() => this._runCreateSmoke().catch((e) => {
         process.stderr.write(`[hugomd-smoke] fatal: ${e.stack || e.message}\n`);
       }), 1500);
-    } else if (process.env.HHAPP_SMOKE === 'stop-test') {
+    } else if (process.env.HUGOMD_SMOKE === 'stop-test') {
       // 测试：启动 server -> 停 2s -> stop，观察事件序列
       setTimeout(() => this._runStopTest().catch((e) => {
         process.stderr.write(`[hugomd-stop-test] fatal: ${e.stack || e.message}\n`);
       }), 1500);
-    } else if (process.env.HHAPP_SMOKE === 'status-check') {
+    } else if (process.env.HUGOMD_SMOKE === 'status-check') {
       // 测试：启动后不做任何操作，观察状态栏文本（复现"启动后无操作就显示 hugo 出错"）
       setTimeout(() => this._runStatusCheck().catch((e) => {
         process.stderr.write(`[hugomd-status-check] fatal: ${e.stack || e.message}\n`);
       }), 1500);
-    } else if (process.env.HHAPP_SMOKE === 'create-pick') {
+    } else if (process.env.HUGOMD_SMOKE === 'create-pick') {
       // 测试：打开新建对话框 -> 把路径输入框改为自定义路径 -> 点创建，
       // 验证工作区创建到自定义路径而非默认路径。
       setTimeout(() => this._runCreatePickSmoke().catch((e) => {
         process.stderr.write(`[hugomd-create-pick] fatal: ${e.stack || e.message}\n`);
       }), 1500);
-    } else if (process.env.HHAPP_SMOKE === 'image-flow') {
+    } else if (process.env.HUGOMD_SMOKE === 'image-flow') {
       // 测试：创建 bundle 帖子 -> 上传图片 -> 读取 -> 插入引用
       setTimeout(() => this._runImageFlowSmoke().catch((e) => {
         process.stderr.write(`[hugomd-image-flow] fatal: ${e.stack || e.message}\n`);
       }), 1500);
-    } else if (process.env.HHAPP_SMOKE === 'rename-test') {
+    } else if (process.env.HUGOMD_SMOKE === 'rename-test') {
       // 测试：复现重命名报 "An object could not be cloned"
       setTimeout(() => this._runInjectSmoke('scripts/inject-rename-test.js', 'hugomd-rename-test').catch((e) => {
         process.stderr.write(`[hugomd-rename-test] fatal: ${e.stack || e.message}\n`);
       }), 1500);
-    } else if (process.env.HHAPP_SMOKE === 'rename-fail') {
+    } else if (process.env.HUGOMD_SMOKE === 'rename-fail') {
       // 测试：重命名失败时 IPC 返回 {error} 而非抛 clone 错误
       setTimeout(() => this._runInjectSmoke('scripts/inject-rename-fail.js', 'hugomd-rename-fail').catch((e) => {
         process.stderr.write(`[hugomd-rename-fail] fatal: ${e.stack || e.message}\n`);
       }), 1500);
-    } else if (process.env.HHAPP_SMOKE === 'ui-flow') {
+    } else if (process.env.HUGOMD_SMOKE === 'ui-flow') {
       // 测试：真实 UI 点击 加号新建 + 铅笔重命名
       setTimeout(() => this._runInjectSmoke('scripts/inject-ui-flow.js', 'hugomd-ui-flow').catch((e) => {
         process.stderr.write(`[hugomd-ui-flow] fatal: ${e.stack || e.message}\n`);
       }), 1500);
-    } else if (process.env.HHAPP_SMOKE === 'create-dbg') {
+    } else if (process.env.HUGOMD_SMOKE === 'create-dbg') {
       // 测试：直接调 files.create/list 排查新建不刷新
       setTimeout(() => this._runInjectSmoke('scripts/inject-create-dbg.js', 'hugomd-create-dbg').catch((e) => {
         process.stderr.write(`[hugomd-create-dbg] fatal: ${e.stack || e.message}\n`);
       }), 1500);
-    } else if (process.env.HHAPP_SMOKE === 'delete-test') {
+    } else if (process.env.HUGOMD_SMOKE === 'delete-test') {
       // 测试：点删除 -> 取消，帖子不应被删除
       setTimeout(() => this._runInjectSmoke('scripts/inject-delete-test.js', 'hugomd-delete-test').catch((e) => {
         process.stderr.write(`[hugomd-delete-test] fatal: ${e.stack || e.message}\n`);
       }), 1500);
-    } else if (process.env.HHAPP_SMOKE === 'paste-test') {
+    } else if (process.env.HUGOMD_SMOKE === 'paste-test') {
       // 测试：模拟 Ctrl+V 粘贴截图 -> 自动保存 + 插入引用
       setTimeout(() => this._runInjectSmoke('scripts/inject-paste-test.js', 'hugomd-paste-test').catch((e) => {
         process.stderr.write(`[hugomd-paste-test] fatal: ${e.stack || e.message}\n`);
+      }), 1500);
+    } else if (process.env.HUGOMD_SMOKE === 'hugo-build') {
+      // 测试：Hugo 面板静态网站生成（hugo:build）
+      setTimeout(() => this._runInjectSmoke('scripts/inject-hugo-build.js', 'hugomd-hugo-build').catch((e) => {
+        process.stderr.write(`[hugomd-hugo-build] fatal: ${e.stack || e.message}\n`);
       }), 1500);
     }
 
@@ -234,7 +239,7 @@ class App {
     const log = (...a) => process.stderr.write('[hugomd-create-pick] ' + a.join(' ') + '\n');
     const wc = this.window.win && this.window.win.webContents;
     if (!wc) { log('FAILED: no webContents'); return; }
-    const customRoot = process.env.HHAPP_CUSTOM_ROOT;
+    const customRoot = process.env.HUGOMD_CUSTOM_ROOT;
     log('customRoot:', customRoot);
     // 用 JSON 序列化路径，避免反斜杠在 JS 模板字符串里被转义吞掉
     const customJson = JSON.stringify(customRoot || '');
@@ -436,9 +441,9 @@ class App {
 
 const application = new App();
 
-// 测试/隔离模式下允许覆盖 userData 路径（HHAPP_USER_DATA=<dir>）
-if (process.env.HHAPP_USER_DATA) {
-  app.setPath('userData', process.env.HHAPP_USER_DATA);
+// 测试/隔离模式下允许覆盖 userData 路径（HUGOMD_USER_DATA=<dir>）
+if (process.env.HUGOMD_USER_DATA) {
+  app.setPath('userData', process.env.HUGOMD_USER_DATA);
 }
 
 app.whenReady().then(() => {

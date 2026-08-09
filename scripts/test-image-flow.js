@@ -19,9 +19,9 @@ const proc = spawn(electronPath, ['.', '--enable-logging'], {
   cwd: path.join(__dirname, '..'),
   env: {
     ...process.env,
-    HHAPP_SMOKE_RENDERER: '1',
-    HHAPP_SMOKE: 'image-flow',
-    HHAPP_USER_DATA: userData,
+    HUGOMD_SMOKE_RENDERER: '1',
+    HUGOMD_SMOKE: 'image-flow',
+    HUGOMD_USER_DATA: userData,
   },
   stdio: ['ignore', 'pipe', 'pipe'],
 });

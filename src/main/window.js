@@ -35,7 +35,7 @@ class WindowManager {
     });
 
     const indexFile = path.join(__dirname, '..', 'renderer', 'index.html');
-    if (process.env.HHAPP_SMOKE_RENDERER === '1') {
+    if (process.env.HUGOMD_SMOKE_RENDERER === '1') {
       await win.loadFile(indexFile, { search: 'smoke=1' });
     } else {
       await win.loadFile(indexFile);
