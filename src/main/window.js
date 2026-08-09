@@ -29,12 +29,17 @@ class WindowManager {
 
     win.once('ready-to-show', () => win.show());
 
-    win.webContents.setWindowOpenHandler(({ url }) => {
+    win.webContents.setWindowOpenHandler(({ url}) => {
       shell.openExternal(url);
       return { action: 'deny' };
     });
 
-    await win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
+    const indexFile = path.join(__dirname, '..', 'renderer', 'index.html');
+    if (process.env.HHAPP_SMOKE_RENDERER === '1') {
+      await win.loadFile(indexFile, { search: 'smoke=1' });
+    } else {
+      await win.loadFile(indexFile);
+    }
     this._win = win;
     return win;
   }

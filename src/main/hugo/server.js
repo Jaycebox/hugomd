@@ -25,6 +25,9 @@ class HugoServer {
     this._state = 'idle';
     this._listeners = new Set();
     this._restartTimer = null;
+    this._stopRequested = false;
+    this._crashCount = 0;
+    this._autoRestart = true;
   }
 
   isRunning() {
@@ -52,6 +55,10 @@ class HugoServer {
     }
     const port = options.port || (await this._freePort());
     const bin = await this.hugo.resolve();
+    // 站点模板目录：提供则用 -s <template> -c <workspace>（工作区只含 markdown）
+    // 不提供则工作区本身就是完整站点（旧模式，兼容）
+    const siteDir = options.siteTemplateDir || workspaceDir;
+    const contentDir = options.siteTemplateDir ? workspaceDir : null;
     const args = [
       'server',
       '--port', String(port),
@@ -60,17 +67,22 @@ class HugoServer {
       '--noHTTPCache',
       '--disableFastRender',
     ];
+    if (contentDir) args.push('-c', contentDir);
     if (options.draft) args.push('--buildDrafts');
     if (options.future) args.push('--buildFuture');
 
     this._state = 'starting';
     this._emit({ type: 'state', state: this._state });
     this.workspaceDir = workspaceDir;
+    this.siteTemplateDir = siteDir;
     this.port = port;
     this.baseURL = `http://127.0.0.1:${port}`;
+    this._stopRequested = false;
+    // 手动 start（或首次启动）时重置崩溃计数；内部自动重启时不重置
+    if (!options._internalRestart) this._crashCount = 0;
 
     const proc = spawn(bin, args, {
-      cwd: workspaceDir,
+      cwd: siteDir,
       env: { ...process.env, HUGO_ENV: options.env || 'development' },
       stdio: ['ignore', 'pipe', 'pipe'],
     });
@@ -86,9 +98,28 @@ class HugoServer {
       this._emit({ type: 'state', state: this._state, error: String(e) });
     });
     proc.on('exit', (code, signal) => {
-      this._state = code === 0 || signal === 'SIGTERM' ? 'stopped' : 'crashed';
-      this._emit({ type: 'state', state: this._state, code, signal });
+      // 主动 stop() 被杀不算崩溃；只有进程自己意外退出才标记 crashed
+      const intentional = this._stopRequested;
+      this._stopRequested = false;
       this.proc = null;
+      if (intentional || code === 0 || signal === 'SIGTERM') {
+        this._state = 'stopped';
+        this._emit({ type: 'state', state: this._state, code, signal });
+        return;
+      }
+      // 意外崩溃：自动重启（带退避，最多重试 2 次）
+      this._state = 'crashed';
+      this._emit({ type: 'state', state: this._state, code, signal });
+      if (this._autoRestart && this._crashCount < 2 && this.workspaceDir) {
+        this._crashCount++;
+        const delay = 800 * this._crashCount;
+        process.stderr.write(`[hhAPP] hugo crashed (code=${code}), retry ${this._crashCount}/2 in ${delay}ms\n`);
+        this._restartTimer = setTimeout(() => {
+          this.start(this.workspaceDir, { draft: true, siteTemplateDir: this.siteTemplateDir, _internalRestart: true }).catch((e) => {
+            process.stderr.write(`[hhAPP] hugo auto-restart failed: ${e.message}\n`);
+          });
+        }, delay);
+      }
     });
 
     // 等待端口可连接，最多 20s
@@ -99,6 +130,7 @@ class HugoServer {
       throw err;
     }
     this._state = 'running';
+    this._crashCount = 0;
     this._emit({ type: 'state', state: this._state, baseURL: this.baseURL, port: this.port });
     return { baseURL: this.baseURL, port: this.port };
   }
@@ -111,9 +143,14 @@ class HugoServer {
   }
 
   async stop() {
+    if (this._restartTimer) {
+      clearTimeout(this._restartTimer);
+      this._restartTimer = null;
+    }
     if (!this.proc) return;
     const proc = this.proc;
     this.proc = null;
+    this._stopRequested = true;
     if (process.platform === 'win32') {
       try {
         await new Promise((resolve) => {
@@ -132,7 +169,7 @@ class HugoServer {
   async restart(workspaceDir) {
     if (workspaceDir) this.workspaceDir = workspaceDir;
     if (this.workspaceDir) {
-      return this.start(this.workspaceDir);
+      return this.start(this.workspaceDir, { siteTemplateDir: this.siteTemplateDir });
     }
     throw new Error('no workspace to restart');
   }
@@ -151,31 +188,43 @@ class HugoServer {
   _waitForPort(port, timeoutMs) {
     return new Promise((resolve) => {
       const start = Date.now();
+      let resolved = false;
+      let interval = null;
+
+      const finish = (ok, reason) => {
+        if (resolved) return;
+        resolved = true;
+        if (interval) clearInterval(interval);
+        if (!ok) {
+          process.stderr.write(`[hhAPP] hugo wait-for-port ${port} failed: ${reason}\n`);
+        }
+        resolve(ok);
+      };
+
       const tryConnect = () => {
+        if (resolved) return;
+        if (Date.now() - start > timeoutMs) {
+          finish(false, 'timeout');
+          return;
+        }
         const socket = new net.Socket();
         let settled = false;
-        const finish = (ok) => {
+        const onResult = (ok, reason) => {
           if (settled) return;
           settled = true;
           try { socket.destroy(); } catch (_) { /* noop */ }
-          resolve(ok);
+          if (ok) finish(true);
+          // 失败时让下一次 interval tick 继续重试
         };
         socket.setTimeout(500);
-        socket.once('connect', () => finish(true));
-        socket.once('error', () => finish(false));
-        socket.once('timeout', () => finish(false));
+        socket.once('connect', () => onResult(true));
+        socket.once('error', (err) => onResult(false, err.code || err.message));
+        socket.once('timeout', () => onResult(false, 'socket-timeout'));
         socket.connect(port, '127.0.0.1');
-        setTimeout(() => finish(false), 600);
       };
+
       tryConnect();
-      const interval = setInterval(() => {
-        if (Date.now() - start > timeoutMs) {
-          clearInterval(interval);
-          resolve(false);
-        } else {
-          tryConnect();
-        }
-      }, 800);
+      interval = setInterval(tryConnect, 500);
     });
   }
 }
