@@ -11,6 +11,7 @@
 - 📦 自带 Hugo 二进制，开箱即用；同时支持 PATH 中的 hugo 和手动指定
 - 🎨 内置多套主题（minimal / terminal / paper），开箱即写
 - 🗂️ 多工作区管理，每个工作区就是一个独立的 Hugo 站点
+- 🖼️ **图片管理**：帖子默认用 page bundle（`content/posts/xxx/index.md`），粘贴/拖入的图片保存在帖子目录，正文用标准 MD 相对路径 `![](pic.png)` 引用，所见即所得
 - 💾 纯本地文件存储，无云依赖
 
 ## 快速开始
@@ -27,6 +28,24 @@ npm run build:win
 ```
 
 > 首次启动时如果没检测到 `hugo` 二进制，App 会自动从 GitHub 下载到用户数据目录。
+
+## 测试
+
+```bash
+npm test            # 跑全部测试（语法 / 主题渲染 / hugo watch / 创建单元 / UI 全链路）
+npm run test:smoke  # 只跑 Electron 真实 UI 点击创建工作区（最慢，约 16s）
+npm run test:e2e    # 只跑 hugo server --watch 实时重建
+```
+
+测试覆盖：
+- **syntax**：`src/` 与 `scripts/` 全部 JS 语法检查
+- **themes**：3 个内置主题能 `hugo build`
+- **e2e**：`hugo server --watch` 修改文件后自动重渲染
+- **createUnit**：`workspace.create` 11 项断言（含缺参数 / 非法主题 / 非空目录等错误分支）
+- **smoke**：启动真实 Electron，模拟用户点击"＋工作区"→ 填表单 → 点"创建" → 校验 hugo server 运行
+
+smoke 测试通过 `HHAPP_USER_DATA` 环境变量使用隔离的临时 userData，不会污染真实数据。
+
 
 ## 目录结构
 
@@ -57,6 +76,7 @@ hhAPP/
 ## 文档
 
 - [架构设计](docs/architecture.md)
+- [Hugo 内容模型与图片管理](docs/content-model.md)
 
 ## License
 

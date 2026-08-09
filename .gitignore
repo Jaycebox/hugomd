@@ -21,3 +21,7 @@ workspace/
 public/
 resources/_gen/
 .hugo_build.lock
+
+# 测试遗留：create-pick smoke 的 HHAPP_CUSTOM_ROOT 路径反斜杠被吞时
+# 会在项目根生成 <Users...>AppDataLocalTemphhapp-custom-root 垃圾目录
+Users*AppDataLocalTemp*hhapp-custom-root*/
