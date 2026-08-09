@@ -332,7 +332,11 @@
           title: '上传 / 管理图片',
           contentHtml,
           footerButtons: [{ label: '关闭', value: null }],
-        }).then(() => { resolve(); });
+        }).then(() => {
+          // 关闭对话框时移除粘贴刷新监听
+          window.removeEventListener('hhapp:image-saved', onImageSaved);
+          resolve();
+        });
 
         const loadImages = async () => {
           try {
@@ -342,6 +346,10 @@
             this.toast({ message: '读取图片失败: ' + window.HHerrMsg(e), type: 'error' });
           }
         };
+
+        // 编辑器里粘贴截图保存成功后自动刷新列表
+        const onImageSaved = () => loadImages();
+        window.addEventListener('hhapp:image-saved', onImageSaved);
 
         setTimeout(() => {
           loadImages();

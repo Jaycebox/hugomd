@@ -271,6 +271,22 @@ const TESTS = {
       return { pass, detail: 'bundle created, image saved/read/inserted' };
     },
   },
+  pasteImage: {
+    desc: '真实 Electron：Ctrl+V 粘贴截图自动保存并插入引用',
+    run() {
+      const r = spawnSync(process.execPath, [path.join(__dirname, 'test-paste.js')], {
+        encoding: 'utf8',
+        timeout: 60000,
+      });
+      const combined = r.stdout + r.stderr;
+      const pass =
+        /"ok": true/.test(combined) &&
+        /defaultPrevented: true/.test(combined) &&
+        /"images": 1/.test(combined) &&
+        /contentHasRef: true/.test(combined);
+      return { pass, detail: 'paste -> saved to post dir + ![](ref) inserted' };
+    },
+  },
   bundleE2E: {
     desc: 'Bundle 帖子 + 图片在 hugo server 完整渲染',
     run() {

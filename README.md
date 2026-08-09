@@ -11,7 +11,7 @@
 - 📦 自带 Hugo 二进制，开箱即用；同时支持 PATH 中的 hugo 和手动指定
 - 🎨 内置多套主题（minimal / terminal / paper），开箱即写
 - 🗂️ 多工作区管理，每个工作区就是一个独立的 Hugo 站点
-- 🖼️ **图片管理**：帖子默认用 page bundle（`content/posts/xxx/index.md`），粘贴/拖入的图片保存在帖子目录，正文用标准 MD 相对路径 `![](pic.png)` 引用，所见即所得
+- 🖼️ **图片管理**：帖子默认用 page bundle（`content/posts/xxx/index.md`），粘贴/拖入的图片保存在帖子目录，正文用标准 MD 相对路径 `![](pic.png)` 引用，所见即所得。**支持截图直贴**：Win+Shift+S 截图后直接在编辑器 Ctrl+V，自动保存到当前帖子目录并插入引用；工具栏"图片"按钮可管理（上传/删除/插入）
 - 💾 纯本地文件存储，无云依赖
 
 ## 快速开始

@@ -112,6 +112,11 @@ class App {
       setTimeout(() => this._runInjectSmoke('scripts/inject-delete-test.js', 'hhAPP-delete-test').catch((e) => {
         process.stderr.write(`[hhAPP-delete-test] fatal: ${e.stack || e.message}\n`);
       }), 1500);
+    } else if (process.env.HHAPP_SMOKE === 'paste-test') {
+      // 测试：模拟 Ctrl+V 粘贴截图 -> 自动保存 + 插入引用
+      setTimeout(() => this._runInjectSmoke('scripts/inject-paste-test.js', 'hhAPP-paste-test').catch((e) => {
+        process.stderr.write(`[hhAPP-paste-test] fatal: ${e.stack || e.message}\n`);
+      }), 1500);
     }
 
     this.buildMenu();

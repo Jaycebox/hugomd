@@ -84,6 +84,10 @@
       placeholderEl: $('preview-placeholder'),
       rootEl: $('preview-pane'),
     });
+
+    // 粘贴截图：Win+Shift+S 截图后直接在编辑器 Ctrl+V，
+    // 自动保存到当前帖子目录并插入 ![](ref)
+    document.addEventListener('paste', handlePaste, true);
   }
 
   function bindMenuEvents() {
@@ -400,6 +404,73 @@
     if (window.HHEditor && window.HHEditor.insertText) {
       window.HHEditor.insertText(snippet);
     }
+  }
+
+  // ============= 粘贴截图 =============
+
+  const PASTE_EXT_BY_MIME = {
+    'image/png': 'png',
+    'image/jpeg': 'jpg',
+    'image/gif': 'gif',
+    'image/webp': 'webp',
+    'image/bmp': 'bmp',
+    'image/svg+xml': 'svg',
+    'image/avif': 'avif',
+  };
+
+  function pad2(n) { return String(n).padStart(2, '0'); }
+
+  // 生成可读文件名: 截图-20260809-215530.png
+  function pasteFileName(mime) {
+    const d = new Date();
+    const stamp = '' + d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) +
+      '-' + pad2(d.getHours()) + pad2(d.getMinutes()) + pad2(d.getSeconds());
+    const ext = PASTE_EXT_BY_MIME[mime] || 'png';
+    return '截图-' + stamp + '.' + ext;
+  }
+
+  // 处理 Ctrl+V：剪贴板里有图片时拦截，保存到当前帖子目录并插入引用。
+  // 没有图片则放行（正常文本粘贴）。
+  async function handlePaste(e) {
+    const ws = Store.state.workspaceDir;
+    const file = Store.state.currentFile;
+    if (!ws || !file) return; // 没打开帖子时不影响其他输入框的粘贴
+    const items = (e.clipboardData && e.clipboardData.items) || [];
+    const imageItems = Array.from(items).filter((it) => it.kind === 'file' && it.type && it.type.startsWith('image/'));
+    if (imageItems.length === 0) return; // 纯文本粘贴，放行
+
+    e.preventDefault(); // 图片粘贴：交给下面的保存流程
+    e.stopPropagation();
+
+    for (const item of imageItems) {
+      const blob = item.getAsFile();
+      if (!blob) continue;
+      try {
+        const dataBase64 = await readBlobAsBase64(blob);
+        const fileName = pasteFileName(item.type);
+        const saved = await window.hh.files.saveImage(ws, { postPath: file.path, fileName, dataBase64 });
+        insertImageRef(saved.ref);
+        window.HHDialogs.toast({ message: '已粘贴截图: ' + saved.ref, type: 'success' });
+        // 通知图片管理对话框刷新（如果正开着）
+        window.dispatchEvent(new CustomEvent('hhapp:image-saved'));
+      } catch (err) {
+        console.error('[hhAPP] paste image failed:', err);
+        window.HHDialogs.toast({ message: '粘贴图片失败: ' + window.HHerrMsg(err), type: 'error', duration: 5000 });
+      }
+    }
+  }
+
+  function readBlobAsBase64(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = String(reader.result || '');
+        const idx = result.indexOf(',');
+        resolve(idx >= 0 ? result.slice(idx + 1) : result);
+      };
+      reader.onerror = () => reject(reader.error || new Error('读取图片失败'));
+      reader.readAsDataURL(blob);
+    });
   }
 
   // ============= 编辑器事件 =============
