@@ -5,7 +5,7 @@ const fs = require('fs');
 const os = require('os');
 
 const electronPath = path.join(__dirname, '..', 'node_modules', 'electron', 'dist', 'electron.exe');
-const userData = path.join(os.tmpdir(), 'hhapp-ui-flow-test');
+const userData = path.join(os.tmpdir(), 'hugomd-ui-flow-test');
 if (fs.existsSync(userData)) fs.rmSync(userData, { recursive: true, force: true });
 
 const proc = spawn(electronPath, ['.', '--enable-logging'], {

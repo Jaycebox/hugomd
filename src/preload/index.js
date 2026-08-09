@@ -4,7 +4,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 /**
  * 暴露给渲染层的安全 API。
- * 渲染层只能通过 window.hh.* 调用主进程能力。
+ * 渲染层只能通过 window.hugomd.* 调用主进程能力。
  */
 const api = {
   app: {
@@ -84,4 +84,4 @@ const api = {
   },
 };
 
-contextBridge.exposeInMainWorld('hh', api);
+contextBridge.exposeInMainWorld('hugomd', api);

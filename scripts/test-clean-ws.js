@@ -1,7 +1,7 @@
 'use strict';
 
 // 验证新架构：干净工作区（只含 markdown）+ 站点模板分离
-// 1. 创建干净工作区（posts/ + .hhapp.json）
+// 1. 创建干净工作区（posts/ + .hugomd.json）
 // 2. 生成站点模板（userData/site-template/<theme>）
 // 3. 用 -s template -c workspace 启动 hugo server
 // 4. 验证渲染 /posts/ 路径和 bundle 图片
@@ -11,7 +11,7 @@ const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
 
-const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hhapp-clean-flow-'));
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hugomd-clean-flow-'));
 const ws = path.join(tmp, 'myblog');          // 工作区（纯 markdown）
 const userData = path.join(tmp, 'userdata');  // 模拟 userData
 fs.mkdirSync(userData, { recursive: true });
@@ -38,8 +38,8 @@ const check = (name, pass, extra) => {
   // 1. 创建干净工作区
   const created = await wm.create({ dir: ws, name: 'myblog', theme: 'minimal' });
   const wsEntries = fs.readdirSync(ws);
-  check('工作区只有 posts + .hhapp.json',
-    wsEntries.every(e => e === 'posts' || e === '.hhapp.json'),
+  check('工作区只有 posts + .hugomd.json',
+    wsEntries.every(e => e === 'posts' || e === '.hugomd.json'),
     JSON.stringify(wsEntries));
   check('工作区无主题/配置', !wsEntries.includes('themes') && !wsEntries.includes('hugo.toml'));
   check('posts/welcome.md 存在', fs.existsSync(path.join(ws, 'posts', 'welcome.md')));

@@ -113,10 +113,10 @@ class HugoServer {
       if (this._autoRestart && this._crashCount < 2 && this.workspaceDir) {
         this._crashCount++;
         const delay = 800 * this._crashCount;
-        process.stderr.write(`[hhAPP] hugo crashed (code=${code}), retry ${this._crashCount}/2 in ${delay}ms\n`);
+        process.stderr.write(`[hugomd] hugo crashed (code=${code}), retry ${this._crashCount}/2 in ${delay}ms\n`);
         this._restartTimer = setTimeout(() => {
           this.start(this.workspaceDir, { draft: true, siteTemplateDir: this.siteTemplateDir, _internalRestart: true }).catch((e) => {
-            process.stderr.write(`[hhAPP] hugo auto-restart failed: ${e.message}\n`);
+            process.stderr.write(`[hugomd] hugo auto-restart failed: ${e.message}\n`);
           });
         }, delay);
       }
@@ -196,7 +196,7 @@ class HugoServer {
         resolved = true;
         if (interval) clearInterval(interval);
         if (!ok) {
-          process.stderr.write(`[hhAPP] hugo wait-for-port ${port} failed: ${reason}\n`);
+          process.stderr.write(`[hugomd] hugo wait-for-port ${port} failed: ${reason}\n`);
         }
         resolve(ok);
       };

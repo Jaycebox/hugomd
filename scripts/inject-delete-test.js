@@ -6,7 +6,7 @@
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => Array.from(document.querySelectorAll(s));
 
-  const hooks = window.__hhapp_smoke;
+  const hooks = window.__hugomd_smoke;
   if (!hooks || !hooks.autoCreate) return { error: 'no smoke hooks' };
 
   const created = await hooks.autoCreate('del-' + Date.now());
@@ -51,7 +51,7 @@
   log1('welcome still there:', stillThere);
 
   // 磁盘上检查
-  const files = await window.hh.files.list(wsDir);
+  const files = await window.hugomd.files.list(wsDir);
   const onDisk = files.some(x => x.name.includes('welcome'));
   log1('on disk:', onDisk);
 

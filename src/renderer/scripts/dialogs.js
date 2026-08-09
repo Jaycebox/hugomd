@@ -32,7 +32,7 @@
         const close = (value) => {
           // 在 DOM 移除前同步回调（用于读取表单值）
           if (onBeforeClose) {
-            try { onBeforeClose(); } catch (e) { console.error('[hhAPP-modal] onBeforeClose failed:', e); }
+            try { onBeforeClose(); } catch (e) { console.error('[hugomd-modal] onBeforeClose failed:', e); }
           }
           backdrop.remove();
           resolve(value);
@@ -190,7 +190,7 @@
             e.stopPropagation();
             const dirInput = document.getElementById('nw-dir');
             try {
-              const picked = await window.hh.workspace.pickDir();
+              const picked = await window.hugomd.workspace.pickDir();
               if (picked) {
                 selectedDir = picked;
                 if (dirInput) dirInput.value = picked;
@@ -198,7 +198,7 @@
                 this.toast({ message: '未选择目录，仍将使用默认位置', type: 'info' });
               }
             } catch (err) {
-              console.error('[hhAPP] pickDir failed:', err);
+              console.error('[hugomd] pickDir failed:', err);
               this.toast({ message: '选择目录失败: ' + window.HHerrMsg(err), type: 'error' });
             }
           });
@@ -245,7 +245,7 @@
 
         setTimeout(() => {
           document.getElementById('set-pick').addEventListener('click', async () => {
-            const p = await window.hh.hugo.pickPath();
+            const p = await window.hugomd.hugo.pickPath();
             if (p) document.getElementById('set-hugo-path').value = p;
           });
           document.getElementById('set-clear').addEventListener('click', () => {
@@ -254,7 +254,7 @@
           document.getElementById('set-download').addEventListener('click', async () => {
             try {
               this.toast({ message: '开始下载 Hugo…', type: 'info' });
-              await window.hh.hugo.ensure();
+              await window.hugomd.hugo.ensure();
               this.toast({ message: 'Hugo 下载完成', type: 'success' });
             } catch (e) {
               this.toast({ message: '下载失败: ' + window.HHerrMsg(e), type: 'error' });
@@ -294,7 +294,7 @@
             `;
             const thumb = card.querySelector('.img-thumb');
             // 异步加载真实缩略图
-            window.hh.files.readImage(workspaceDir, img.path).then((r) => {
+            window.hugomd.files.readImage(workspaceDir, img.path).then((r) => {
               if (r && r.data) thumb.src = `data:${r.mime};base64,${r.data}`;
             }).catch(() => {});
             card.addEventListener('click', async (e) => {
@@ -307,7 +307,7 @@
                   title: '删除图片', message: `确定删除 "${img.ref}"？`, okText: '删除', okClass: 'btn-danger',
                 });
                 if (ok) {
-                  await window.hh.files.deleteImage(workspaceDir, img.path);
+                  await window.hugomd.files.deleteImage(workspaceDir, img.path);
                   images = images.filter(i => i.path !== img.path);
                   renderGrid();
                 }
@@ -334,13 +334,13 @@
           footerButtons: [{ label: '关闭', value: null }],
         }).then(() => {
           // 关闭对话框时移除粘贴刷新监听
-          window.removeEventListener('hhapp:image-saved', onImageSaved);
+          window.removeEventListener('hugomd:image-saved', onImageSaved);
           resolve();
         });
 
         const loadImages = async () => {
           try {
-            images = await window.hh.files.listImages(workspaceDir, postPath);
+            images = await window.hugomd.files.listImages(workspaceDir, postPath);
             renderGrid();
           } catch (e) {
             this.toast({ message: '读取图片失败: ' + window.HHerrMsg(e), type: 'error' });
@@ -349,7 +349,7 @@
 
         // 编辑器里粘贴截图保存成功后自动刷新列表
         const onImageSaved = () => loadImages();
-        window.addEventListener('hhapp:image-saved', onImageSaved);
+        window.addEventListener('hugomd:image-saved', onImageSaved);
 
         setTimeout(() => {
           loadImages();
@@ -363,7 +363,7 @@
               reader.onload = async () => {
                 try {
                   const base64 = String(reader.result).split(',')[1];
-                  await window.hh.files.saveImage(workspaceDir, { postPath, fileName: file.name, dataBase64: base64 });
+                  await window.hugomd.files.saveImage(workspaceDir, { postPath, fileName: file.name, dataBase64: base64 });
                   this.toast({ message: '已上传: ' + file.name, type: 'success' });
                   await loadImages();
                 } catch (e) {

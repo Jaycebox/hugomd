@@ -110,7 +110,7 @@
     insertText(text) {
       if (!this._editor) return;
       const selection = this._editor.getSelection();
-      this._editor.executeEdits('hhapp', [{ range: selection, text: text, forceMoveMarkers: true }]);
+      this._editor.executeEdits('hugomd', [{ range: selection, text: text, forceMoveMarkers: true }]);
       this._editor.focus();
     },
 

@@ -1,4 +1,4 @@
-# hhAPP
+# hugomd
 
 一个基于 **Electron** + **Hugo** 的桌面端笔记/博客写作工具。
 所有笔记都以 Hugo 博客文章（`content/posts/*.md`）的形式存在，
@@ -50,7 +50,7 @@ smoke 测试通过 `HHAPP_USER_DATA` 环境变量使用隔离的临时 userData�
 ## 目录结构
 
 ```
-hhAPP/
+hugomd/
 ├── src/
 │   ├── main/                 # Electron 主进程
 │   │   ├── index.js          # 入口

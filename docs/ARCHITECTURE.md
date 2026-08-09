@@ -1,4 +1,4 @@
-# hhAPP 架构设计
+# hugomd 架构设计
 
 ## 总体思路
 
@@ -107,7 +107,7 @@ app.before-quit
 | `WorkspaceManager` | `src/main/workspace/manager.js` | 工作区创建/列表 |
 | `FileService` | `src/main/files/service.js` | content/posts/*.md CRUD |
 | `registerIpc` | `src/main/ipc.js` | 所有 ipcMain.handle 集中点 |
-| `preload` | `src/preload/index.js` | 暴露 `window.hh.*` 安全 API |
+| `preload` | `src/preload/index.js` | 暴露 `window.hugomd.*` 安全 API |
 
 ## 渲染层
 

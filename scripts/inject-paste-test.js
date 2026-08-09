@@ -6,7 +6,7 @@
   const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   const log1 = (...a) => console.warn('[paste-test]', ...a);
 
-  const hooks = window.__hhapp_smoke;
+  const hooks = window.__hugomd_smoke;
   if (!hooks || !hooks.autoCreate) return { error: 'no smoke hooks' };
 
   const created = await hooks.autoCreate('paste-' + Date.now());
@@ -34,14 +34,14 @@
   for (let i = 0; i < 40; i++) {
     await sleep(500);
     try {
-      const content = (await window.hh.files.read(wsDir, current.path)).content;
+      const content = (await window.hugomd.files.read(wsDir, current.path)).content;
       const m = content.match(/!\[\]\((截图-[^)]+)\)/);
       if (m) { contentHasRef = true; ref = m[1]; break; }
     } catch (_) { /* 文件可能尚未写入 */ }
   }
   log1('ref found:', ref, '| contentHasRef:', contentHasRef);
 
-  const imgs = await window.hh.files.listImages(wsDir, current.path);
+  const imgs = await window.hugomd.files.listImages(wsDir, current.path);
   log1('images after paste:', JSON.stringify(imgs));
 
   const ok = !!defaultPrevented && !!contentHasRef && imgs.length === 1 && imgs[0].ref === ref;

@@ -1,5 +1,5 @@
 {
-  "name": "hhapp",
+  "name": "hugomd",
   "version": "0.1.0",
   "description": "一个基于 Electron + Hugo 的笔记/博客写作 App",
   "main": "src/main/index.js",
@@ -28,8 +28,8 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.hhapp.desktop",
-    "productName": "hhAPP",
+    "appId": "com.hugomd.desktop",
+    "productName": "hugomd",
     "files": [
       "src/**/*",
       "!**/*.map"

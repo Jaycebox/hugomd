@@ -61,61 +61,61 @@ class App {
     await this.window.create();
 
     // 烟囱测试钩子：HHAPP_SMOKE=create 时自动跑一遍"新建工作区"流程。
-    // 仅在 hhAPP_SMOKE 环境变量存在时启用，用于回归测试。
+    // 仅在 hugomd_SMOKE 环境变量存在时启用，用于回归测试。
     if (process.env.HHAPP_SMOKE === 'create') {
       setTimeout(() => this._runCreateSmoke().catch((e) => {
-        process.stderr.write(`[hhAPP-smoke] fatal: ${e.stack || e.message}\n`);
+        process.stderr.write(`[hugomd-smoke] fatal: ${e.stack || e.message}\n`);
       }), 1500);
     } else if (process.env.HHAPP_SMOKE === 'stop-test') {
       // 测试：启动 server -> 停 2s -> stop，观察事件序列
       setTimeout(() => this._runStopTest().catch((e) => {
-        process.stderr.write(`[hhAPP-stop-test] fatal: ${e.stack || e.message}\n`);
+        process.stderr.write(`[hugomd-stop-test] fatal: ${e.stack || e.message}\n`);
       }), 1500);
     } else if (process.env.HHAPP_SMOKE === 'status-check') {
       // 测试：启动后不做任何操作，观察状态栏文本（复现"启动后无操作就显示 hugo 出错"）
       setTimeout(() => this._runStatusCheck().catch((e) => {
-        process.stderr.write(`[hhAPP-status-check] fatal: ${e.stack || e.message}\n`);
+        process.stderr.write(`[hugomd-status-check] fatal: ${e.stack || e.message}\n`);
       }), 1500);
     } else if (process.env.HHAPP_SMOKE === 'create-pick') {
       // 测试：打开新建对话框 -> 把路径输入框改为自定义路径 -> 点创建，
       // 验证工作区创建到自定义路径而非默认路径。
       setTimeout(() => this._runCreatePickSmoke().catch((e) => {
-        process.stderr.write(`[hhAPP-create-pick] fatal: ${e.stack || e.message}\n`);
+        process.stderr.write(`[hugomd-create-pick] fatal: ${e.stack || e.message}\n`);
       }), 1500);
     } else if (process.env.HHAPP_SMOKE === 'image-flow') {
       // 测试：创建 bundle 帖子 -> 上传图片 -> 读取 -> 插入引用
       setTimeout(() => this._runImageFlowSmoke().catch((e) => {
-        process.stderr.write(`[hhAPP-image-flow] fatal: ${e.stack || e.message}\n`);
+        process.stderr.write(`[hugomd-image-flow] fatal: ${e.stack || e.message}\n`);
       }), 1500);
     } else if (process.env.HHAPP_SMOKE === 'rename-test') {
       // 测试：复现重命名报 "An object could not be cloned"
-      setTimeout(() => this._runInjectSmoke('scripts/inject-rename-test.js', 'hhAPP-rename-test').catch((e) => {
-        process.stderr.write(`[hhAPP-rename-test] fatal: ${e.stack || e.message}\n`);
+      setTimeout(() => this._runInjectSmoke('scripts/inject-rename-test.js', 'hugomd-rename-test').catch((e) => {
+        process.stderr.write(`[hugomd-rename-test] fatal: ${e.stack || e.message}\n`);
       }), 1500);
     } else if (process.env.HHAPP_SMOKE === 'rename-fail') {
       // 测试：重命名失败时 IPC 返回 {error} 而非抛 clone 错误
-      setTimeout(() => this._runInjectSmoke('scripts/inject-rename-fail.js', 'hhAPP-rename-fail').catch((e) => {
-        process.stderr.write(`[hhAPP-rename-fail] fatal: ${e.stack || e.message}\n`);
+      setTimeout(() => this._runInjectSmoke('scripts/inject-rename-fail.js', 'hugomd-rename-fail').catch((e) => {
+        process.stderr.write(`[hugomd-rename-fail] fatal: ${e.stack || e.message}\n`);
       }), 1500);
     } else if (process.env.HHAPP_SMOKE === 'ui-flow') {
       // 测试：真实 UI 点击 加号新建 + 铅笔重命名
-      setTimeout(() => this._runInjectSmoke('scripts/inject-ui-flow.js', 'hhAPP-ui-flow').catch((e) => {
-        process.stderr.write(`[hhAPP-ui-flow] fatal: ${e.stack || e.message}\n`);
+      setTimeout(() => this._runInjectSmoke('scripts/inject-ui-flow.js', 'hugomd-ui-flow').catch((e) => {
+        process.stderr.write(`[hugomd-ui-flow] fatal: ${e.stack || e.message}\n`);
       }), 1500);
     } else if (process.env.HHAPP_SMOKE === 'create-dbg') {
       // 测试：直接调 files.create/list 排查新建不刷新
-      setTimeout(() => this._runInjectSmoke('scripts/inject-create-dbg.js', 'hhAPP-create-dbg').catch((e) => {
-        process.stderr.write(`[hhAPP-create-dbg] fatal: ${e.stack || e.message}\n`);
+      setTimeout(() => this._runInjectSmoke('scripts/inject-create-dbg.js', 'hugomd-create-dbg').catch((e) => {
+        process.stderr.write(`[hugomd-create-dbg] fatal: ${e.stack || e.message}\n`);
       }), 1500);
     } else if (process.env.HHAPP_SMOKE === 'delete-test') {
       // 测试：点删除 -> 取消，帖子不应被删除
-      setTimeout(() => this._runInjectSmoke('scripts/inject-delete-test.js', 'hhAPP-delete-test').catch((e) => {
-        process.stderr.write(`[hhAPP-delete-test] fatal: ${e.stack || e.message}\n`);
+      setTimeout(() => this._runInjectSmoke('scripts/inject-delete-test.js', 'hugomd-delete-test').catch((e) => {
+        process.stderr.write(`[hugomd-delete-test] fatal: ${e.stack || e.message}\n`);
       }), 1500);
     } else if (process.env.HHAPP_SMOKE === 'paste-test') {
       // 测试：模拟 Ctrl+V 粘贴截图 -> 自动保存 + 插入引用
-      setTimeout(() => this._runInjectSmoke('scripts/inject-paste-test.js', 'hhAPP-paste-test').catch((e) => {
-        process.stderr.write(`[hhAPP-paste-test] fatal: ${e.stack || e.message}\n`);
+      setTimeout(() => this._runInjectSmoke('scripts/inject-paste-test.js', 'hugomd-paste-test').catch((e) => {
+        process.stderr.write(`[hugomd-paste-test] fatal: ${e.stack || e.message}\n`);
       }), 1500);
     }
 
@@ -126,9 +126,9 @@ class App {
       const bin = await this.hugo.resolve();
       const ver = await this.hugo.checkVersion(bin);
       const src = this.hugo._pickSourceSync();
-      process.stderr.write(`[hhAPP] hugo: ${ver} (${bin}) [${src}]\n`);
+      process.stderr.write(`[hugomd] hugo: ${ver} (${bin}) [${src}]\n`);
     } catch (e) {
-      process.stderr.write(`[hhAPP] hugo not found: ${e.message}\n`);
+      process.stderr.write(`[hugomd] hugo not found: ${e.message}\n`);
     }
   }
 
@@ -142,7 +142,7 @@ class App {
   async _runCreateSmoke() {
     // 模拟真实用户：点击"＋工作区"按钮 -> modal -> 填表单 -> 点"创建"。
     // 走真实 UI 交互路径，能复现用户手动操作遇到的 bug。
-    const log = (...a) => process.stderr.write('[hhAPP-smoke] ' + a.join(' ') + '\n');
+    const log = (...a) => process.stderr.write('[hugomd-smoke] ' + a.join(' ') + '\n');
     log('begin (real UI click)');
     const wc = this.window.win && this.window.win.webContents;
     if (!wc) { log('FAILED: no webContents'); return; }
@@ -188,8 +188,8 @@ class App {
           let state = null;
           for (let i = 0; i < 40; i++) {
             await sleep(500);
-            if (window.__hhapp_smoke && window.__hhapp_smoke.getState) {
-              state = window.__hhapp_smoke.getState();
+            if (window.__hugomd_smoke && window.__hugomd_smoke.getState) {
+              state = window.__hugomd_smoke.getState();
               if (state.workspaceDir && state.server && state.server.state === 'running') break;
             }
           }
@@ -207,14 +207,14 @@ class App {
   }
 
   async _runStopTest() {
-    const log = (...a) => process.stderr.write('[hhAPP-stop-test] ' + a.join(' ') + '\n');
+    const log = (...a) => process.stderr.write('[hugomd-stop-test] ' + a.join(' ') + '\n');
     try {
       const dir = this.workspace.defaultWorkspacesRoot() + '/myblog';
-      if (!fs.existsSync(path.join(dir, '.hhapp.json'))) {
+      if (!fs.existsSync(path.join(dir, '.hugomd.json'))) {
         log('no workspace, creating');
         await this.workspace.create({ dir, name: 'myblog', theme: 'minimal' });
       }
-      const meta = JSON.parse(fs.readFileSync(path.join(dir, '.hhapp.json'), 'utf8'));
+      const meta = JSON.parse(fs.readFileSync(path.join(dir, '.hugomd.json'), 'utf8'));
       const siteTemplateDir = await this.workspace.ensureSiteTemplate(meta.theme || 'minimal');
       log('starting server... (template: ' + siteTemplateDir + ')');
       await this.hugoServer.start(dir, { draft: true, siteTemplateDir });
@@ -231,7 +231,7 @@ class App {
   }
 
   async _runCreatePickSmoke() {
-    const log = (...a) => process.stderr.write('[hhAPP-create-pick] ' + a.join(' ') + '\n');
+    const log = (...a) => process.stderr.write('[hugomd-create-pick] ' + a.join(' ') + '\n');
     const wc = this.window.win && this.window.win.webContents;
     if (!wc) { log('FAILED: no webContents'); return; }
     const customRoot = process.env.HHAPP_CUSTOM_ROOT;
@@ -290,12 +290,12 @@ class App {
           // 等待创建完成
           for (let i = 0; i < 40; i++) {
             await sleep(500);
-            if (window.__hhapp_smoke && window.__hhapp_smoke.getState) {
-              const s = window.__hhapp_smoke.getState();
+            if (window.__hugomd_smoke && window.__hugomd_smoke.getState) {
+              const s = window.__hugomd_smoke.getState();
               if (s.workspaceDir && s.workspaceDir.startsWith(custom)) return { state: s };
             }
           }
-          return { note: 'timed out waiting for custom-dir workspace', state: window.__hhapp_smoke && window.__hhapp_smoke.getState() };
+          return { note: 'timed out waiting for custom-dir workspace', state: window.__hugomd_smoke && window.__hugomd_smoke.getState() };
         })()
       `, true);
       log('renderer result:', JSON.stringify(result, null, 2));
@@ -306,7 +306,7 @@ class App {
   }
 
   async _runImageFlowSmoke() {
-    const log = (...a) => process.stderr.write('[hhAPP-image-flow] ' + a.join(' ') + '\n');
+    const log = (...a) => process.stderr.write('[hugomd-image-flow] ' + a.join(' ') + '\n');
     const wc = this.window.win && this.window.win.webContents;
     if (!wc) { log('FAILED: no webContents'); return; }
     const inject = fs.readFileSync(path.join(__dirname, '..', '..', 'scripts', 'inject-image-flow.js'), 'utf8');
@@ -334,7 +334,7 @@ class App {
   }
 
   async _runStatusCheck() {
-    const log = (...a) => process.stderr.write('[hhAPP-status-check] ' + a.join(' ') + '\n');
+    const log = (...a) => process.stderr.write('[hugomd-status-check] ' + a.join(' ') + '\n');
     const wc = this.window.win && this.window.win.webContents;
     if (!wc) { log('FAILED: no webContents'); return; }
     // 等 6s（让自动恢复 workpace / hugo 启动的时序走完），期间不点任何东西
@@ -345,7 +345,7 @@ class App {
           const el = document.getElementById('server-status');
           if (!el) return 'NO_STATUS_ELEMENT';
           const t = el.querySelector('.text');
-          const s = (window.__hhapp_smoke && window.__hhapp_smoke.getState) ? window.__hhapp_smoke.getState() : null;
+          const s = (window.__hugomd_smoke && window.__hugomd_smoke.getState) ? window.__hugomd_smoke.getState() : null;
           return 'className=' + el.className + '|text=' + (t ? t.textContent : 'NO_TEXT') +
                  '|serverState=' + (s && s.server ? s.server.state : 'n/a') +
                  '|workspace=' + (s ? s.workspaceDir : 'n/a');
@@ -443,7 +443,7 @@ if (process.env.HHAPP_USER_DATA) {
 
 app.whenReady().then(() => {
   application.init().catch((err) => {
-    console.error('[hhAPP] init failed:', err);
+    console.error('[hugomd] init failed:', err);
     dialog.showErrorBox('启动失败', err.stack || String(err));
     app.quit();
   });
@@ -472,7 +472,7 @@ app.on('before-quit', async (e) => {
     try {
       await application.hugoServer.stop();
     } catch (err) {
-      console.error('[hhAPP] failed to stop hugo server:', err);
+      console.error('[hugomd] failed to stop hugo server:', err);
     }
     app.quit();
   }

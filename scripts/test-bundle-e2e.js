@@ -7,7 +7,7 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
-const tmp = path.join(os.tmpdir(), 'hhapp-bundle-e2e');
+const tmp = path.join(os.tmpdir(), 'hugomd-bundle-e2e');
 if (fs.existsSync(tmp)) fs.rmSync(tmp, { recursive: true, force: true });
 fs.mkdirSync(path.join(tmp, 'themes', 'minimal'), { recursive: true });
 fs.cpSync(path.join(__dirname, '..', 'src', 'resources', 'themes', 'minimal'),

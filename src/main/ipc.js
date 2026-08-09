@@ -21,7 +21,7 @@ function registerIpc(ctx) {
       try {
         return await fn(event, ...args);
       } catch (err) {
-        process.stderr.write(`[hhAPP] IPC ${channel} failed: ${err.stack || err.message}\n`);
+        process.stderr.write(`[hugomd] IPC ${channel} failed: ${err.stack || err.message}\n`);
         throw { error: String((err && err.message) || err) };
       }
     });
@@ -98,7 +98,7 @@ function registerIpc(ctx) {
     if (res.canceled || !res.filePaths[0]) return null;
     const dir = res.filePaths[0];
     if (!workspace.exists(dir)) {
-      throw new Error('所选目录不是 hhAPP 工作区 (缺少 hugo.toml): ' + dir);
+      throw new Error('所选目录不是 hugomd 工作区 (缺少 hugo.toml): ' + dir);
     }
     workspace.markOpened(dir);
     return { path: dir, name: path.basename(dir) };
@@ -113,13 +113,16 @@ function registerIpc(ctx) {
   handle('server:start', async (_e, payload) => {
     const workspaceDir = payload && payload.workspaceDir;
     const options = (payload && payload.options) || {};
-    // 自动附加站点模板目录：从工作区元数据读主题
+    // 自动附加站点模板目录：从工作区元数据读主题（兼容旧 .hhapp.json）
     if (workspaceDir && !options.siteTemplateDir) {
       try {
-        const meta = JSON.parse(fs.readFileSync(path.join(workspaceDir, '.hhapp.json'), 'utf8'));
+        const metaFile = fs.existsSync(path.join(workspaceDir, '.hhapp.json'))
+          ? path.join(workspaceDir, '.hhapp.json')
+          : path.join(workspaceDir, '.hugomd.json');
+        const meta = JSON.parse(fs.readFileSync(metaFile, 'utf8'));
         options.siteTemplateDir = await workspace.ensureSiteTemplate(meta.theme || 'minimal');
       } catch (err) {
-        process.stderr.write(`[hhAPP] resolve siteTemplateDir failed: ${err.message}\n`);
+        process.stderr.write(`[hugomd] resolve siteTemplateDir failed: ${err.message}\n`);
       }
     }
     const result = await hugoServer.start(workspaceDir, options);
@@ -143,7 +146,7 @@ function registerIpc(ctx) {
   // 透传 hugo server 日志到渲染层
   hugoServer.on((event) => {
     if (event && event.type === 'state') {
-      process.stderr.write(`[hhAPP-server-event] state=${event.state} baseURL=${event.baseURL || ''} code=${event.code || ''} signal=${event.signal || ''} error=${event.error || ''}\n`);
+      process.stderr.write(`[hugomd-server-event] state=${event.state} baseURL=${event.baseURL || ''} code=${event.code || ''} signal=${event.signal || ''} error=${event.error || ''}\n`);
     }
     window.send('server:event', event);
   });

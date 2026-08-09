@@ -1,4 +1,4 @@
-# Hugo 内容模型与图片管理（hhAPP 实现）
+# Hugo 内容模型与图片管理（hugomd 实现）
 
 ## Hugo 是怎么组织内容的
 
@@ -44,7 +44,7 @@ Hugo 渲染后：
 
 已用 `hugo server` 实测验证：相对路径、子目录路径都正确解析，预览和最终站点一致。
 
-## hhAPP 的实现
+## hugomd 的实现
 
 ### 目录结构（工作区 = 纯 markdown）
 
@@ -57,7 +57,7 @@ Hugo 渲染后：
 │   └── my-post/                ← page bundle
 │       ├── index.md
 │       └── 图片.jpg
-└── .hhapp.json                 ← App 内部元数据（主题、名称，隐藏）
+└── .hugomd.json                 ← App 内部元数据（主题、名称，隐藏）
 
 站点模板/                        ← App 内部管理，用户不关心
 （userData/site-template/<theme>/）
@@ -98,7 +98,7 @@ files:renameImage(imagePath,newName)
 
 ## 与 Hugo 原生功能的边界
 
-- **图片处理**（Resize/Fill/Crop/转 webp）：Hugo 构建时能力，hhAPP 目前只是"托管原图 + 直接引用"。需要时可在主题模板里加 `.Resize`。
+- **图片处理**（Resize/Fill/Crop/转 webp）：Hugo 构建时能力，hugomd 目前只是"托管原图 + 直接引用"。需要时可在主题模板里加 `.Resize`。
 - **cover 图**：列表页可做成取 bundle 第一张图做封面（模板 `.Resources.ByType "image"` 取第一张），目前未做。
 - **shortcode**：`{{< figure ... >}}` 能自动解析 bundle 资源，但语法不直观，默认用标准 MD。
 

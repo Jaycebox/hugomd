@@ -10,12 +10,12 @@ const fs = require('fs');
 const os = require('os');
 
 const electronPath = path.join(__dirname, '..', 'node_modules', 'electron', 'dist', 'electron.exe');
-const userData = path.join(os.tmpdir(), 'hhapp-pick-test');
+const userData = path.join(os.tmpdir(), 'hugomd-pick-test');
 if (fs.existsSync(userData)) fs.rmSync(userData, { recursive: true, force: true });
 fs.mkdirSync(userData, { recursive: true });
 
 // 模拟用户选择的自定义目录（不在 userData 下）
-const customRoot = path.join(os.tmpdir(), 'hhapp-custom-root');
+const customRoot = path.join(os.tmpdir(), 'hugomd-custom-root');
 if (fs.existsSync(customRoot)) fs.rmSync(customRoot, { recursive: true, force: true });
 fs.mkdirSync(customRoot, { recursive: true });
 

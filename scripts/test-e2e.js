@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const tmp = path.join(os.tmpdir(), 'hhapp-e2e');
+const tmp = path.join(os.tmpdir(), 'hugomd-e2e');
 if (fs.existsSync(tmp)) fs.rmSync(tmp, { recursive: true, force: true });
 fs.mkdirSync(path.join(tmp, 'content', 'posts'), { recursive: true });
 fs.mkdirSync(path.join(tmp, 'themes', 'minimal'), { recursive: true });

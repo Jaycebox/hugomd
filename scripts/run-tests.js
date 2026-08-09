@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * hhAPP 测试套件入口。
+ * hugomd 测试套件入口。
  * 用 Node 原生 runner 逐个跑所有测试，汇总结果。
  *
  * 用法:
@@ -47,7 +47,7 @@ const TESTS = {
     desc: '3 个内置主题 hugo build 可渲染',
     run() {
       const os = require('os');
-      const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hhapp-test-themes-'));
+      const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hugomd-test-themes-'));
       fs.mkdirSync(path.join(tmp, 'themes'), { recursive: true });
       for (const t of ['minimal', 'terminal', 'paper']) {
         fs.cpSync(path.join(ROOT, 'src', 'resources', 'themes', t), path.join(tmp, 'themes', t), { recursive: true });
@@ -87,7 +87,7 @@ const TESTS = {
       const WorkspaceManager = require(path.join(ROOT, 'src', 'main', 'workspace', 'manager'));
       const fakeHugo = { embeddedDir: path.join(ROOT, 'src', 'resources', 'bin') };
       const fakeSettings = {
-        filePath: path.join(os.tmpdir(), 'hhapp-unit-settings.json'),
+        filePath: path.join(os.tmpdir(), 'hugomd-unit-settings.json'),
         data: {},
         get(k, d) { return k in this.data ? this.data[k] : d; },
         set(k, v) { this.data[k] = v; },
@@ -95,7 +95,7 @@ const TESTS = {
       };
       const wm = new WorkspaceManager({ hugo: fakeHugo, settings: fakeSettings });
 
-      const mkTmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'hhapp-create-unit-'));
+      const mkTmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'hugomd-create-unit-'));
 
       const checks = [];
       const check = (name, pass, extra) => {
@@ -126,7 +126,7 @@ const TESTS = {
       check('正常创建返回 path/name/theme', created.path === target && created.name === 'myblog' && created.theme === 'terminal');
       check('工作区无 hugo.toml（纯 markdown）', !fs.existsSync(path.join(target, 'hugo.toml')));
       check('工作区无 themes', !fs.existsSync(path.join(target, 'themes')));
-      check('.hhapp.json 元数据存在', fs.existsSync(path.join(target, '.hhapp.json')));
+      check('.hugomd.json 元数据存在', fs.existsSync(path.join(target, '.hugomd.json')));
       check('posts 已创建（content 根）', fs.existsSync(path.join(target, 'posts')));
       check('welcome.md 已写', fs.existsSync(path.join(target, 'posts', 'welcome.md')));
 
@@ -148,7 +148,7 @@ const TESTS = {
       const os = require('os');
       const HugoServer = require(path.join(ROOT, 'src', 'main', 'hugo', 'server'));
       const hugoBin = process.env.HUGO_BIN || 'hugo';
-      const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hhapp-server-unit-'));
+      const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hugomd-server-unit-'));
       fs.mkdirSync(path.join(tmp, 'themes', 'minimal'), { recursive: true });
       fs.cpSync(path.join(ROOT, 'src', 'resources', 'themes', 'minimal'),
         path.join(tmp, 'themes', 'minimal'), { recursive: true });

@@ -15,7 +15,7 @@ class WindowManager {
       height: 800,
       minWidth: 960,
       minHeight: 600,
-      title: 'hhAPP',
+      title: 'hugomd',
       backgroundColor: '#1e1e1e',
       show: false,
       webPreferences: {

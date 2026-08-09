@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * hhAPP 渲染层主入口。
+ * hugomd 渲染层主入口。
  * 职责：
  *   1. 初始化 Monaco、Sidebar、Preview
  *   2. 监听菜单事件
@@ -91,7 +91,7 @@
   }
 
   function bindMenuEvents() {
-    window.hh.menu.on((action) => {
+    window.hugomd.menu.on((action) => {
       switch (action) {
         case 'new-workspace': flowNewWorkspace(); break;
         case 'open-workspace': flowOpenWorkspace(); break;
@@ -104,7 +104,7 @@
   }
 
   function bindServerEvents() {
-    window.hh.hugo.onDownloadProgress((p) => {
+    window.hugomd.hugo.onDownloadProgress((p) => {
       if (p.stage === 'start') {
         window.HHDialogs.toast({ message: '开始下载 Hugo: ' + p.url, duration: 4000 });
       } else if (p.stage === 'progress') {
@@ -115,7 +115,7 @@
       }
     });
     let _crashToastTimer = null;
-    window.hh.server.onEvent((ev) => {
+    window.hugomd.server.onEvent((ev) => {
       if (ev.type === 'state') {
         Store.state.server = { state: ev.state, baseURL: ev.baseURL, port: ev.port };
         renderServerStatus();
@@ -171,8 +171,8 @@
   // ============= 工作区流程 =============
 
   async function tryRestoreLastSession() {
-    const all = await window.hh.settings.getAll();
-    if (all.lastWorkspace && await window.hh.workspace.exists(all.lastWorkspace)) {
+    const all = await window.hugomd.settings.getAll();
+    if (all.lastWorkspace && await window.hugomd.workspace.exists(all.lastWorkspace)) {
       await openWorkspace(all.lastWorkspace, { silent: true });
     }
   }
@@ -187,33 +187,33 @@
       if (!ok) return;
       await closeCurrentWorkspace();
     }
-    const defaultRoot = await window.hh.workspace.defaultRoot();
-    const settings = await window.hh.settings.getAll();
+    const defaultRoot = await window.hugomd.workspace.defaultRoot();
+    const settings = await window.hugomd.settings.getAll();
     const result = await window.HHDialogs.newWorkspace({
       defaultRoot,
       themes: ['minimal', 'terminal', 'paper'],
       defaultTheme: settings.lastTheme || 'minimal',
-      existingNames: (await window.hh.workspace.list()).map(w => w.name),
+      existingNames: (await window.hugomd.workspace.list()).map(w => w.name),
     });
     if (!result) return;
-    console.warn('[hhAPP-flow] new-workspace result:', result);
+    console.warn('[hugomd-flow] new-workspace result:', result);
     try {
-      const ws = await window.hh.hugo.ensure();
-      console.warn('[hhAPP-flow] hugo ensure OK:', ws.path);
+      const ws = await window.hugomd.hugo.ensure();
+      console.warn('[hugomd-flow] hugo ensure OK:', ws.path);
       Store.state.hugo = { source: ws.path, version: ws.version };
-      const created = await window.hh.workspace.create(result);
-      console.warn('[hhAPP-flow] workspace create OK:', created.path);
-      await window.hh.settings.setMany({ lastWorkspace: created.path, lastTheme: result.theme });
+      const created = await window.hugomd.workspace.create(result);
+      console.warn('[hugomd-flow] workspace create OK:', created.path);
+      await window.hugomd.settings.setMany({ lastWorkspace: created.path, lastTheme: result.theme });
       await openWorkspace(created.path, { silent: true });
       window.HHDialogs.toast({ message: '已创建工作区: ' + created.name, type: 'success' });
     } catch (e) {
-      console.warn('[hhAPP-flow] CREATE FAILED:', e.stack || window.HHerrMsg(e));
+      console.warn('[hugomd-flow] CREATE FAILED:', e.stack || window.HHerrMsg(e));
       window.HHDialogs.toast({ message: '创建失败: ' + window.HHerrMsg(e), type: 'error', duration: 5000 });
     }
   }
 
   async function flowOpenWorkspace() {
-    const res = await window.hh.workspace.pickExisting();
+    const res = await window.hugomd.workspace.pickExisting();
     if (!res) return;
     if (Store.state.workspaceDir) await closeCurrentWorkspace();
     await openWorkspace(res.path, { silent: true });
@@ -226,7 +226,7 @@
     Store.state.workspaceName = dir.split(/[\\/]/).pop();
     renderWorkspaceName();
     try {
-      const files = await window.hh.files.list(dir);
+      const files = await window.hugomd.files.list(dir);
       Store.state.files = files;
       window.HHSidebar.setFiles(files);
       $('editor-empty').style.display = 'none';
@@ -240,10 +240,10 @@
         $('doc-path').textContent = '';
         $('save-state').textContent = '已保存';
       }
-      const ws = await window.hh.hugo.ensure();
+      const ws = await window.hugomd.hugo.ensure();
       Store.state.hugo = { source: ws.path, version: ws.version };
       try {
-        await window.hh.server.start(dir, { draft: true });
+        await window.hugomd.server.start(dir, { draft: true });
         setStatus('hugo server 已在 ' + ws.path + ' 启动');
       } catch (e) {
         window.HHDialogs.toast({ message: 'hugo server 启动失败: ' + window.HHerrMsg(e), type: 'error', duration: 5000 });
@@ -256,7 +256,7 @@
   }
 
   async function closeCurrentWorkspace() {
-    try { await window.hh.server.stop(); } catch (_) { /* noop */ }
+    try { await window.hugomd.server.stop(); } catch (_) { /* noop */ }
     window.HHPreview.setBaseURL(null);
     window.HHEditor.setValue('');
     window.HHSidebar.setFiles([]);
@@ -272,7 +272,7 @@
   }
 
   async function flowSettings() {
-    const status = await window.hh.hugo.status();
+    const status = await window.hugomd.hugo.status();
     await window.HHDialogs.settings({ hugoStatus: status });
   }
 
@@ -283,7 +283,7 @@
   }
 
   function revealWorkspace() {
-    if (Store.state.workspaceDir) window.hh.workspace.reveal(Store.state.workspaceDir);
+    if (Store.state.workspaceDir) window.hugomd.workspace.reveal(Store.state.workspaceDir);
   }
 
   // ============= 文件流程 =============
@@ -293,7 +293,7 @@
       await saveCurrent();
     }
     try {
-      const result = await window.hh.files.read(Store.state.workspaceDir, file.path);
+      const result = await window.hugomd.files.read(Store.state.workspaceDir, file.path);
       const content = result.content;
       Store.state.currentFile = file;
       Store.state.currentContent = content;
@@ -326,8 +326,8 @@
         okText: '创建',
       });
       if (!baseName) return;
-      const created = await window.hh.files.create(Store.state.workspaceDir, baseName);
-      const files = await window.hh.files.list(Store.state.workspaceDir);
+      const created = await window.hugomd.files.create(Store.state.workspaceDir, baseName);
+      const files = await window.hugomd.files.list(Store.state.workspaceDir);
       Store.state.files = files;
       window.HHSidebar.setFiles(files);
       const newFile = files.find(f => f.path === created.path);
@@ -340,8 +340,8 @@
   async function deleteFile(file) {
     if (!Store.state.workspaceDir) return;
     try {
-      await window.hh.files.delete(Store.state.workspaceDir, file.path);
-      const files = await window.hh.files.list(Store.state.workspaceDir);
+      await window.hugomd.files.delete(Store.state.workspaceDir, file.path);
+      const files = await window.hugomd.files.list(Store.state.workspaceDir);
       Store.state.files = files;
       window.HHSidebar.setFiles(files);
       if (Store.state.currentFile && Store.state.currentFile.path === file.path) {
@@ -362,8 +362,8 @@
   async function renameFile(file, newName) {
     if (!Store.state.workspaceDir) return;
     try {
-      const result = await window.hh.files.rename(Store.state.workspaceDir, file.path, newName);
-      const files = await window.hh.files.list(Store.state.workspaceDir);
+      const result = await window.hugomd.files.rename(Store.state.workspaceDir, file.path, newName);
+      const files = await window.hugomd.files.list(Store.state.workspaceDir);
       Store.state.files = files;
       window.HHSidebar.setFiles(files);
       if (Store.state.currentFile && Store.state.currentFile.path === file.path) {
@@ -448,13 +448,13 @@
       try {
         const dataBase64 = await readBlobAsBase64(blob);
         const fileName = pasteFileName(item.type);
-        const saved = await window.hh.files.saveImage(ws, { postPath: file.path, fileName, dataBase64 });
+        const saved = await window.hugomd.files.saveImage(ws, { postPath: file.path, fileName, dataBase64 });
         insertImageRef(saved.ref);
         window.HHDialogs.toast({ message: '已粘贴截图: ' + saved.ref, type: 'success' });
         // 通知图片管理对话框刷新（如果正开着）
-        window.dispatchEvent(new CustomEvent('hhapp:image-saved'));
+        window.dispatchEvent(new CustomEvent('hugomd:image-saved'));
       } catch (err) {
-        console.error('[hhAPP] paste image failed:', err);
+        console.error('[hugomd] paste image failed:', err);
         window.HHDialogs.toast({ message: '粘贴图片失败: ' + window.HHerrMsg(err), type: 'error', duration: 5000 });
       }
     }
@@ -493,9 +493,9 @@
     $('save-state').className = 'saving';
     try {
       const content = window.HHEditor.getValue();
-      await window.hh.files.write(Store.state.workspaceDir, Store.state.currentFile.path, content);
+      await window.hugomd.files.write(Store.state.workspaceDir, Store.state.currentFile.path, content);
       Store.state.dirty = false;
-      const files = await window.hh.files.list(Store.state.workspaceDir);
+      const files = await window.hugomd.files.list(Store.state.workspaceDir);
       Store.state.files = files;
       window.HHSidebar.setFiles(files);
       $('save-state').textContent = '已保存';
@@ -530,29 +530,29 @@
 
   // ============= smoke 钩子（仅 smoke 模式下启用） =============
   if (window.location && window.location.search && window.location.search.includes('smoke=1')) {
-    window.__hhapp_smoke = {
+    window.__hugomd_smoke = {
       runNewWorkspace: () => flowNewWorkspace(),
       runOpenWorkspace: () => flowOpenWorkspace(),
       getState: () => JSON.parse(JSON.stringify(Store.state)),
       async autoCreate(name) {
         const displayName = name || ('smoke-' + Date.now());
         try {
-          const defaultRoot = await window.hh.workspace.defaultRoot();
+          const defaultRoot = await window.hugomd.workspace.defaultRoot();
           const fullDir = defaultRoot.replace(/[\\/]+$/, '') + '/' + displayName;
-          const ws = await window.hh.hugo.ensure();
-          const created = await window.hh.workspace.create({ dir: fullDir, name: displayName, theme: 'minimal' });
-          await window.hh.settings.setMany({ lastWorkspace: created.path, lastTheme: 'minimal' });
+          const ws = await window.hugomd.hugo.ensure();
+          const created = await window.hugomd.workspace.create({ dir: fullDir, name: displayName, theme: 'minimal' });
+          await window.hugomd.settings.setMany({ lastWorkspace: created.path, lastTheme: 'minimal' });
           await openWorkspace(created.path, { silent: true });
           return {
             ok: true,
             path: created.path,
-            state: window.__hhapp_smoke.getState(),
+            state: window.__hugomd_smoke.getState(),
           };
         } catch (e) {
           return { ok: false, error: window.HHerrMsg(e), stack: (e.stack || '').split('\n')[0] };
         }
       },
     };
-    console.warn('[hhAPP-smoke] hooks installed:', Object.keys(window.__hhapp_smoke).join(', '));
+    console.warn('[hugomd-smoke] hooks installed:', Object.keys(window.__hugomd_smoke).join(', '));
   }
 })();

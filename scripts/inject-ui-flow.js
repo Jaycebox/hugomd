@@ -6,7 +6,7 @@
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => Array.from(document.querySelectorAll(s));
 
-  const hooks = window.__hhapp_smoke;
+  const hooks = window.__hugomd_smoke;
   if (!hooks || !hooks.autoCreate) return { error: 'no smoke hooks' };
 
   // 1. 创建工作区
@@ -91,7 +91,7 @@
   log1('sidebar items after rename:', items2.length, names2);
 
   // 验证磁盘上确实重命名了
-  const listFinal = await window.hh.files.list(wsDir);
+  const listFinal = await window.hugomd.files.list(wsDir);
   const finalPaths = listFinal.map(x => x.path);
 
   return {

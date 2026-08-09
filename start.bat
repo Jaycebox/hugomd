@@ -1,6 +1,6 @@
 @echo off
 rem ============================================================
-rem  hhAPP dev launcher (ASCII wrapper -> start.ps1)
+rem  hugomd dev launcher (ASCII wrapper -> start.ps1)
 rem  Usage:
 rem    start.bat                         -> normal debug (with logs)
 rem    start.bat --remote-debugging-port=9222

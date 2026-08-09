@@ -9,7 +9,7 @@ const fs = require('fs');
 const os = require('os');
 
 const electronPath = path.join(__dirname, '..', 'node_modules', 'electron', 'dist', 'electron.exe');
-const userData = path.join(os.tmpdir(), 'hhapp-smoke-userdata');
+const userData = path.join(os.tmpdir(), 'hugomd-smoke-userdata');
 if (fs.existsSync(userData)) fs.rmSync(userData, { recursive: true, force: true });
 
 console.log('Spawning electron with HHAPP_SMOKE_RENDERER=1');
@@ -19,7 +19,7 @@ const proc = spawn(electronPath, ['.', '--enable-logging'], {
     ...process.env,
     HHAPP_SMOKE_RENDERER: '1',
     HHAPP_SMOKE: 'create',
-    HHAPP_USER_DATA: userData,   // 覆盖 userData，避免污染真实 Roaming\hhapp
+    HHAPP_USER_DATA: userData,   // 覆盖 userData，避免污染真实 Roaming\hugomd
   },
   stdio: ['ignore', 'pipe', 'pipe'],
 });

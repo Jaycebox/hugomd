@@ -6,7 +6,7 @@ const path = require('path');
 const FileService = require('../src/main/files/service');
 
 const svc = new FileService();
-const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hhapp-file-test-'));
+const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hugomd-file-test-'));
 const ws = path.join(tmp, 'ws');
 
 const checks = [];
